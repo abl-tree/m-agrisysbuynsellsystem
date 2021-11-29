@@ -1683,6 +1683,7 @@ $(document).ready(function() {
         swal("Payment Success!", "Payment Added.", "success");
         refresh_cash_advance_table();
         refresh_balance_table();
+        location.reload(true);
       },
       error: function(data) {
         swal("Oh no!", "Something went wrong, try again.", "error");
@@ -2969,6 +2970,7 @@ $(document).ready(function() {
                 "success"
               );
               $("#curCashOnHand").html(data.cashOnHand.toFixed(2));
+              location.reload(true);
             }
           });
         }

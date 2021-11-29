@@ -656,8 +656,8 @@
 	</div>
 
     <!-- View Person DTR Modal -->
-    <div class="modal fade" id="dtr_view_modal" tabindex="-1" role="dialog">
-		<div class="modal-dialog modal-lg" role="document" style="width: 1100px;">
+    <div class="modal fade" id="dtr_view_modal"  tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog" role="document" style="width: 95%;">
             <div class="row">
                  
                     <div class="card">
@@ -911,7 +911,7 @@ $('body').on('hidden.bs.modal', function () {
 
 $(document).ready(function() {
   function cb(start, end) {
-    $('.reportrange span').html(
+    $('.reportrange span').html(  
       start.format("MMMM D YYYY, h:mm:ss a") +
         " - " +
         end.format("MMMM D YYYY, h:mm:ss a")
@@ -1168,6 +1168,7 @@ $(document).ready(function() {
             "success"
           );
         }
+        location.reload(true);
         // }else if(data2.cashHistory&&data2.user!=1){
         //     button.disabled = false;
         //     input.html('SAVE CHANGES');
@@ -2085,6 +2086,7 @@ $(document).ready(function() {
                 "success"
               );
               $("#curCashOnHand").html(data.cashOnHand.toFixed(2));
+              location.reload(true);
             }
           });
         }
@@ -2266,6 +2268,7 @@ $(document).ready(function() {
             mainMouseDownOne();
             button.disabled = false;
             input.html("SAVE CHANGES");
+            location.reload(true);
             refresh_dtr_table();
           },
           error: function(data) {
@@ -3048,6 +3051,7 @@ $(document).ready(function() {
       data: { id: id },
       dataType: "json",
       success: function(data) {
+        
         total = addCommas(data);
       }
     });
@@ -3388,6 +3392,11 @@ $(document).ready(function() {
                   " | Transaction ID: " +
                   data.cashHistory,
                 "success"
+              );
+              console.log(data)
+              $("#balance_view").html(
+                "Balance: ₱" +
+                  data.balance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
               );
               $("#curCashOnHand").html(data.cashOnHand.toFixed(2));
             }
