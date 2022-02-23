@@ -659,7 +659,6 @@
     <div class="modal fade" id="dtr_view_modal" tabindex="-1" role="dialog">
 		<div class="modal-dialog modal-lg" role="document" style="width: 90%;">
             <div class="row">
-                 
                     <div class="card">
                         <div class="header">
                             <h2> Daily Time Records History - <span class="modal_title_dtr"></span></h2>
@@ -675,21 +674,43 @@
                                 <h5 id="balance_view"></h5>
                                     <thead>
                                         <tr>
-                                            <th>Overtime</th>
-                                            <th>Number of Hours</th>
-                                            <th>Date/Time</th>
-                                            <th>Bonus</th>
-                                            <th>Balance</th>
-                                            <th>Partial Payment</th>
-                                            <th>Remaining Balance</th>
-                                            <th>Salary</th>
-                                            <th>Status</th>
-                                            <th>Released By</th>
-                                            <th>Releasing</th>
+                                            <th rowspan="2">Overtime</th>
+                                            <th rowspan="2">Number of Hours</th>
+                                            <th rowspan="2">Date/Time</th>
+                                            <th rowspan="2">Bonus</th>
+                                            <th rowspan="2">Balance</th>
+                                            <th rowspan="2">Partial Payment</th>
+                                            <th rowspan="2">Remaining Balance</th>
+                                            <th colspan="5" style="text-align:center;">DEDUCTIONS</th>
+                                            <th rowspan="2" width="80" style="text-align:center;">Total Deductions</th>
+                                            <th rowspan="2" width="80" style="text-align:center;">SSS/ 
+                                              PHIC/ 
+                                              HDMF/ 
+                                              LODGING/ 
+                                              OTHERS
+                                            </th>
+                                            <th rowspan="2">Salary</th>
+                                            <th rowspan="2">Status</th>
+                                            <th rowspan="2">Released By</th>
+                                            <th rowspan="2">Releasing</th>
+                                        </tr>
+                                        <tr>
+                                          <th width="80" style="text-align:center;">SSS</th>
+                                          <th width="80" style="text-align:center;">PHIC</th>
+                                          <th width="80" style="text-align:center;">HDMF</th>
+                                          <th width="80" style="text-align:center;">Lodging</th>
+                                          <th width="80" style="text-align:center;">Others</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
                                             <th></th>
                                             <th></th>
                                             <th></th>
@@ -1706,7 +1727,6 @@ $(document).ready(function() {
       { data: "deductions", name: "deductions" },
       { data: "deductions", name: "total_deductions", visible: false, 
         render: function(data, type, row, meta) {
-          
           return row.sss_deductions + ' /\n' +
             row.phic_deductions + ' /\n' +
             row.hdmf_deductions + ' /\n' +
@@ -1960,34 +1980,13 @@ $(document).ready(function() {
                           : 0;
                       };
 
-                      // Total over all pages
-                      total = api
-                        .column(7)
-                        .data()
-                        .reduce(function(a, b) {
-                          return intVal(a) + intVal(b);
-                        }, 0);
-
-                      // Total over this page
-                      pageTotal = api
-                        .column(7, { page: "current" })
-                        .data()
-                        .reduce(function(a, b) {
-                          return intVal(a) + intVal(b);
-                        }, 0);
-
-                      // Total over this page
-                      pageTotal1 = api
-                        .column(7, { page: "current" })
-                        .data()
-                        .reduce(function(a, b) {
-                          return intVal(a) + intVal(b);
-                        }, 0);
+                      total = calculateTotal(api, 14, true); // Total over all pages
+                      pageTotal = calculateTotal(api, 14); // Total over this page
+                      deductionsTotal = calculateTotal(api, 12); // Total deductions over this page
 
                       // Update footer
-                      $(api.column(7).footer()).html(
-                        "Total: <br>₱" + number_format(pageTotal, 2)
-                      );
+                      appendTotalToFooter(api, 14, pageTotal); // salary
+                      appendTotalToFooter(api, 12, deductionsTotal); // deductions
                     },
                     dom: "Blfrtip",
                     lengthMenu: [
@@ -1999,7 +1998,7 @@ $(document).ready(function() {
                       {
                         extend: "print",
                         exportOptions: {
-                          columns: [0, 1, 2, 3, 4, 5, 6],
+                          columns: [0, 1, 2, 3, 4, 5, 6, 13, 14, 15],
                           modifier: {
                             page: "current"
                           }
@@ -2024,7 +2023,7 @@ $(document).ready(function() {
                         title: $("#view_dtr_name").val(),
                         footer: true,
                         exportOptions: {
-                          columns: [0, 1, 2, 3, 4, 5, 6],
+                          columns: [0, 1, 2, 3, 4, 5, 6, 13, 14, 15],
                           modifier: {
                             page: "current"
                           }
@@ -2065,6 +2064,20 @@ $(document).ready(function() {
                       { data: "dtr_balance", name: "dtr_balance" },
                       { data: "p_payment", name: "p_payment" },
                       { data: "r_balance", name: "r_balance" },
+                      { data: "sss_deductions", name: "sss_deductions" },
+                      { data: "phic_deductions", name: "phic_deductions" },
+                      { data: "hdmf_deductions", name: "hdmf_deductions" },
+                      { data: "lodging_deductions", name: "lodging_deductions" },
+                      { data: "other_deductions", name: "other_deductions" },
+                      { data: "deductions", name: "deductions" },
+                      { data: "deductions", name: "total_deductions", visible: false, 
+                        render: function(data, type, row, meta) {
+                          return row.sss_deductions + ' /\n' +
+                            row.phic_deductions + ' /\n' +
+                            row.hdmf_deductions + ' /\n' +
+                            row.lodging_deductions + ' /\n' +
+                            row.other_deductions;
+                        } },
                       { data: "salary", name: "salary" },
                       { data: "status", name: "status" },
                       { data: "released_by", name: "released_by" },
@@ -2135,32 +2148,13 @@ $(document).ready(function() {
                         : 0;
                     };
 
-                    // Total over all pages
-                    total = api
-                      .column(7)
-                      .data()
-                      .reduce(function(a, b) {
-                        return intVal(a) + intVal(b);
-                      }, 0);
+                    total = calculateTotal(api, 14, true); // Total over all pages
+                    pageTotal = calculateTotal(api, 14); // Total over this page
+                    deductionsTotal = calculateTotal(api, 12); // Total deductions over this page
 
-                    // Total over this page
-                    pageTotal = api
-                      .column(7, { page: "current" })
-                      .data()
-                      .reduce(function(a, b) {
-                        return intVal(a) + intVal(b);
-                      }, 0);
-
-                    // Total over this page
-                    pageTotal1 = api
-                      .column(7, { page: "current" })
-                      .data()
-                      .reduce(function(a, b) {
-                        return intVal(a) + intVal(b);
-                      }, 0);
-                    $(api.column(7).footer()).html(
-                      "Total: <br>₱" + number_format(pageTotal, 2)
-                    );
+                    // Update footer
+                    appendTotalToFooter(api, 14, pageTotal); // salary
+                    appendTotalToFooter(api, 12, deductionsTotal); // deductions
                   },
                   dom: "Blfrtip",
                   lengthMenu: [
@@ -2172,7 +2166,7 @@ $(document).ready(function() {
                     {
                       extend: "print",
                       exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6],
+                        columns: [0, 1, 2, 3, 4, 5, 6, 13, 14, 15],
                         modifier: {
                           page: "current"
                         }
@@ -2197,7 +2191,7 @@ $(document).ready(function() {
                       title: $("#view_dtr_name").val(),
                       footer: true,
                       exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6],
+                        columns: [0, 1, 2, 3, 4, 5, 6, 13, 14, 15],
                         modifier: {
                           page: "current"
                         }
@@ -2238,6 +2232,20 @@ $(document).ready(function() {
                     { data: "dtr_balance", name: "dtr_balance" },
                     { data: "p_payment", name: "p_payment" },
                     { data: "r_balance", name: "r_balance" },
+                    { data: "sss_deductions", name: "sss_deductions" },
+                    { data: "phic_deductions", name: "phic_deductions" },
+                    { data: "hdmf_deductions", name: "hdmf_deductions" },
+                    { data: "lodging_deductions", name: "lodging_deductions" },
+                    { data: "other_deductions", name: "other_deductions" },
+                    { data: "deductions", name: "deductions" },
+                    { data: "deductions", name: "total_deductions", visible: false, 
+                      render: function(data, type, row, meta) {
+                        return row.sss_deductions + ' /\n' +
+                          row.phic_deductions + ' /\n' +
+                          row.hdmf_deductions + ' /\n' +
+                          row.lodging_deductions + ' /\n' +
+                          row.other_deductions;
+                      } },
                     { data: "salary", name: "salary" },
                     { data: "status", name: "status" },
                     { data: "released_by", name: "released_by" },
@@ -2373,34 +2381,13 @@ $(document).ready(function() {
                         : 0;
                     };
 
-                    // Total over all pages
-                    total = api
-                      .column(7)
-                      .data()
-                      .reduce(function(a, b) {
-                        return intVal(a) + intVal(b);
-                      }, 0);
-
-                    // Total over this page
-                    pageTotal = api
-                      .column(7, { page: "current" })
-                      .data()
-                      .reduce(function(a, b) {
-                        return intVal(a) + intVal(b);
-                      }, 0);
-
-                    // Total over this page
-                    pageTotal1 = api
-                      .column(7, { page: "current" })
-                      .data()
-                      .reduce(function(a, b) {
-                        return intVal(a) + intVal(b);
-                      }, 0);
+                    total = calculateTotal(api, 14, true); // Total over all pages
+                    pageTotal = calculateTotal(api, 14); // Total over this page
+                    deductionsTotal = calculateTotal(api, 12); // Total deductions over this page
 
                     // Update footer
-                    $(api.column(7).footer()).html(
-                      "Total: <br>₱" + number_format(pageTotal, 2)
-                    );
+                    appendTotalToFooter(api, 14, pageTotal); // salary
+                    appendTotalToFooter(api, 12, deductionsTotal); // deductions
                   },
                   dom: "Blfrtip",
                   lengthMenu: [
@@ -2412,7 +2399,7 @@ $(document).ready(function() {
                     {
                       extend: "print",
                       exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6],
+                        columns: [0, 1, 2, 3, 4, 5, 6, 13, 14, 15],
                         modifier: {
                           page: "current"
                         }
@@ -2437,7 +2424,7 @@ $(document).ready(function() {
                       title: $("#view_dtr_name").val(),
                       footer: true,
                       exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6],
+                        columns: [0, 1, 2, 3, 4, 5, 6, 13, 14, 15],
                         modifier: {
                           page: "current"
                         }
@@ -2478,6 +2465,20 @@ $(document).ready(function() {
                     { data: "dtr_balance", name: "dtr_balance" },
                     { data: "p_payment", name: "p_payment" },
                     { data: "r_balance", name: "r_balance" },
+                    { data: "sss_deductions", name: "sss_deductions" },
+                    { data: "phic_deductions", name: "phic_deductions" },
+                    { data: "hdmf_deductions", name: "hdmf_deductions" },
+                    { data: "lodging_deductions", name: "lodging_deductions" },
+                    { data: "other_deductions", name: "other_deductions" },
+                    { data: "deductions", name: "deductions" },
+                    { data: "deductions", name: "total_deductions", visible: false, 
+                      render: function(data, type, row, meta) {
+                        return row.sss_deductions + ' /\n' +
+                          row.phic_deductions + ' /\n' +
+                          row.hdmf_deductions + ' /\n' +
+                          row.lodging_deductions + ' /\n' +
+                          row.other_deductions;
+                      } },
                     { data: "salary", name: "salary" },
                     { data: "status", name: "status" },
                     { data: "released_by", name: "released_by" },
@@ -3115,34 +3116,13 @@ $(document).ready(function() {
                 : 0;
             };
 
-            // Total over all pages
-            total = api
-              .column(7)
-              .data()
-              .reduce(function(a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
-
-            // Total over this page
-            pageTotal = api
-              .column(7, { page: "current" })
-              .data()
-              .reduce(function(a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
-
-            // Total over this page
-            pageTotal1 = api
-              .column(7, { page: "current" })
-              .data()
-              .reduce(function(a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
+            total = calculateTotal(api, 14, true); // Total over all pages
+            pageTotal = calculateTotal(api, 14); // Total over this page
+            deductionsTotal = calculateTotal(api, 12); // Total deductions over this page
 
             // Update footer
-            $(api.column(7).footer()).html(
-              "Total: <br>₱" + number_format(pageTotal, 2)
-            );
+            appendTotalToFooter(api, 14, pageTotal); // salary
+            appendTotalToFooter(api, 12, deductionsTotal); // deductions
           },
           dom: "Blfrtip",
           lengthMenu: [
@@ -3154,7 +3134,7 @@ $(document).ready(function() {
             {
               extend: "print",
               exportOptions: {
-                columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                columns: [0, 1, 2, 3, 4, 5, 6, 13, 14, 15],
                 modifier: {
                   page: "current"
                 }
@@ -3179,7 +3159,7 @@ $(document).ready(function() {
               title: $("#view_dtr_name").val(),
               footer: true,
               exportOptions: {
-                columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                columns: [0, 1, 2, 3, 4, 5, 6, 13, 14, 15],
                 modifier: {
                   page: "current"
                 }
@@ -3220,6 +3200,20 @@ $(document).ready(function() {
             { data: "dtr_balance", name: "dtr_balance" },
             { data: "p_payment", name: "p_payment" },
             { data: "r_balance", name: "r_balance" },
+            { data: "sss_deductions", name: "sss_deductions" },
+            { data: "phic_deductions", name: "phic_deductions" },
+            { data: "hdmf_deductions", name: "hdmf_deductions" },
+            { data: "lodging_deductions", name: "lodging_deductions" },
+            { data: "other_deductions", name: "other_deductions" },
+            { data: "deductions", name: "deductions" },
+            { data: "deductions", name: "total_deductions", visible: false, 
+              render: function(data, type, row, meta) {
+                return row.sss_deductions + ' /\n' +
+                  row.phic_deductions + ' /\n' +
+                  row.hdmf_deductions + ' /\n' +
+                  row.lodging_deductions + ' /\n' +
+                  row.other_deductions;
+              } },
             { data: "salary", name: "salary" },
             { data: "status", name: "status" },
             { data: "released_by", name: "released_by" },
