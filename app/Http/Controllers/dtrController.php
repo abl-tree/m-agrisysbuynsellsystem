@@ -791,7 +791,49 @@ class dtrController extends Controller
             }else{
                 return '<button class="btn btn-xs btn-danger released waves-effect" id="'.$dtr_view->id.'"><i class="material-icons">done_all</i></button>';
             }
-
+        })
+        ->editColumn('deductions', function ($data){
+            return '₱ '.number_format(($data->deductions), 2, '.', ',');
+        })
+        ->addColumn('sss_deductions', function ($data){
+            if($data->deductions_object){
+                $deductions_object = json_decode($data->deductions_object);
+                return '₱ '.number_format(($deductions_object->sss_deductions ?? 0), 2, '.', ',');;
+            } else {
+                return '₱ 0.00';
+            }
+        })
+        ->addColumn('phic_deductions', function ($data){
+            if($data->deductions_object){
+                $deductions_object = json_decode($data->deductions_object);
+                return '₱ '.number_format(($deductions_object->phic_deductions ?? 0), 2, '.', ',');;
+            } else {
+                return '₱ 0.00';
+            }
+        })
+        ->addColumn('hdmf_deductions', function ($data){
+            if($data->deductions_object){
+                $deductions_object = json_decode($data->deductions_object);
+                return '₱ '.number_format(($deductions_object->hdmf_deductions ?? 0), 2, '.', ',');;
+            } else {
+                return '₱ 0.00';
+            }
+        })
+        ->addColumn('lodging_deductions', function ($data){
+            if($data->deductions_object){
+                $deductions_object = json_decode($data->deductions_object);
+                return '₱ '.number_format(($deductions_object->lodging_deductions ?? 0), 2, '.', ',');;
+            } else {
+                return '₱ 0.00';
+            }
+        })
+        ->addColumn('other_deductions', function ($data){
+            if($data->deductions_object){
+                $deductions_object = json_decode($data->deductions_object);
+                return '₱ '.number_format(($deductions_object->other_deductions ?? 0), 2, '.', ',');;
+            } else {
+                return '₱ 0.00';
+            }
         })
 		->editColumn('salary', function ($data) {
             return '₱ '.number_format($data->salary, 2, '.', ',');
