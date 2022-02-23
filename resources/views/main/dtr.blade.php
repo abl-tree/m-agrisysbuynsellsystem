@@ -1612,7 +1612,7 @@ $(document).ready(function() {
       deductionsTotal = calculateTotal(api, 18); // Total remaining balance over this page
 
       // Append totals to footer
-      appendTotalToFooter(api, 18, deductionsTotal);
+      appendTotalToFooter(api, 17, deductionsTotal);
       appendTotalToFooter(api, 19, pageTotal);
       appendTotalToFooter(api, 11, totalBeforeDeduction);
       appendTotalToFooter(api, 10, remainingBalanceTotal);
