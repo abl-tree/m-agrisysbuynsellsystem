@@ -102,7 +102,7 @@ class summaryController extends Controller
 
         }else{
         $getDate = Carbon::now();
-        $dateTime = $getDate->year.$getDate->month.$getDate->day.$salesLatest->id+1;
+        $dateTime = $getDate->year.$getDate->month.$getDate->day.($salesLatest->id+1);
          $output = array(
             'trans_no' => $dateTime
             
