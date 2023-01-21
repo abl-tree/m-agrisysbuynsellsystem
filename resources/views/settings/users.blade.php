@@ -303,10 +303,6 @@ var start = moment();
 var end = moment();
 var historytable;
 function cb(start, end) {
-  console.log(
-    "Start:" + start.format("MMMM D YYYY, h:mm:ss a"),
-    "End:" + end.format("MMMM D YYYY, h:mm:ss a")
-  );
   $("#reportrange span").html(
     start.format("MMMM D YYYY, h:mm:ss a") +
       " - " +
@@ -641,19 +637,117 @@ $(document).ready(function() {
     });
   });
   //USER Datatable ends here
+  var id = 0;
+  $("#reportrange").on("apply.daterangepicker", function(ev, picker) {
+      $(this).val(
+        picker.startDate.format("MMMM D YYYY, h:mm:ss a") +
+          " to " +
+          picker.endDate.format("MMMM D YYYY, h:mm:ss a")
+      );
+      var start_date = picker.startDate.format("Y-M-D")
+      var end_date =  picker.endDate.format("Y-M-D")
+    
+      historytable = $("#cash_history_table").DataTable({
+          dom: "Blfrtip",
+          lengthMenu: [
+            [10, 25, 50, -1],
+            [10, 25, 50, "All"]
+          ],
+          destroy: true,
+          buttons: [
+            {
+              extend: "print",
+              exportOptions: {
+                columns: [0, 1, 2, 3, 4, 5],
+                modifier: {
+                  page: "current"
+                }
+              },
+              customize: function(win) {
+                $(win.document.body).css("font-size", "10pt");
+
+                $(win.document.body)
+                  .find("table")
+                  .addClass("compact")
+                  .css("font-size", "inherit");
+              },
+              footer: true
+            },
+            {
+              extend: "pdfHtml5",
+              title: "Cash History - " + $(".modal_title_cash").text(),
+              footer: true,
+              exportOptions: {
+                columns: [0, 1, 2, 3, 4, 5],
+                modifier: {
+                  page: "current"
+                }
+              },
+              customize: function(doc) {
+                doc.styles.tableHeader.fontSize = 8;
+                doc.styles.tableFooter.fontSize = 8;
+                doc.defaultStyle.fontSize = 8;
+                doc.content[1].table.widths = Array(
+                  doc.content[1].table.body[0].length + 1
+                )
+                  .join("*")
+                  .split("");
+              }
+            }
+          ],
+          ajax: {
+            url: "{{ route('view_cash_history') }}",
+            // dataType: 'text',
+            type: "get",
+            headers: {
+              "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+            },
+            data: {
+              date_from: start_date,
+              date_to: end_date,
+              id: id,
+            }
+          },
+          processing: true,
+          columnDefs: [
+            {
+              targets: "_all", // your case first column
+              className: "text-center"
+            }
+          ],
+          order: [0],
+          columns: [
+            { data: "trans_no", name: "trans_no" },
+            { data: "previous_cash", name: "previous_cash" },
+            { data: "cash_change", name: "cash_change" },
+            { data: "total_cash", name: "total_cash" },
+            { data: "type", name: "type" },
+            { data: "created_at", name: "created_at" }
+          ]
+        });
+       
+  });
+
+    $("#reportrange").on("cancel.daterangepicker", function(ev, picker) {
+      $(this).val("");
+     $("#cash_history_table")
+          .dataTable()
+          .fnDestroy();
+    });
 
   //CASH History Daatatable starts here
   $(document).on("click", ".view_cash_history", function() {
-    var id = $(this).attr("id");
-
+    id= $(this).attr("id");
+    var start_date = start.format("Y-D-M");
+    var end_date = end.format("Y-D-M")
     $.ajax({
       url: "{{ route('view_cash_history') }}",
       method: "get",
-      data: { id: id },
+      data: { id: id,from_date:start_date,to_date:end_date },
       dataType: "json",
       success: function(data) {
+        if(data.data.length>0){
         $(".modal_title_cash").text(data.data[0].user.username);
-
         historytable = $("#cash_history_table").DataTable({
           dom: "Blfrtip",
           lengthMenu: [
@@ -720,54 +814,12 @@ $(document).ready(function() {
             { data: "created_at", name: "created_at" }
           ]
         });
+      }else{
+        historytable = $("#cash_history_table").DataTable();
+      }
       }
     });
-    $("#reportrange").on("apply.daterangepicker", function(ev, picker) {
-      $(this).val(
-        picker.startDate.format("MMMM D YYYY, h:mm:ss a") +
-          " to " +
-          picker.endDate.format("MMMM D YYYY, h:mm:ss a")
-      );
-      historytable.draw();
-    });
-    $("#reportrange").on("cancel.daterangepicker", function(ev, picker) {
-      $(this).val("");
-      historytable.draw();
-    });
-    $.fn.dataTableExt.afnFiltering.push(function(oSettings, aData, iDataIndex) {
-      var grab_daterange = $("#reportrange").val();
-      var give_results_daterange = grab_daterange.split(" to ");
-      var filterstart = give_results_daterange[0];
-      var filterend = give_results_daterange[1];
-      var iStartDateCol = 5; //using column 2 in this instance
-      var iEndDateCol = 5;
-      var tabledatestart = aData[iStartDateCol];
-      var tabledateend = aData[iEndDateCol];
 
-      if (!filterstart && !filterend) {
-        return true;
-      } else if (
-        (moment(filterstart).isSame(tabledatestart) ||
-          moment(filterstart).isBefore(tabledatestart)) &&
-        filterend === ""
-      ) {
-        return true;
-      } else if (
-        (moment(filterstart).isSame(tabledatestart) ||
-          moment(filterstart).isAfter(tabledatestart)) &&
-        filterstart === ""
-      ) {
-        return true;
-      } else if (
-        (moment(filterstart).isSame(tabledatestart) ||
-          moment(filterstart).isBefore(tabledatestart)) &&
-        (moment(filterend).isSame(tabledateend) ||
-          moment(filterend).isAfter(tabledateend))
-      ) {
-        return true;
-      }
-      return false;
-    });
   });
 
   //CASH History Datatable ends here
