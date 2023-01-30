@@ -304,9 +304,9 @@ var end = moment();
 var historytable;
 function cb(start, end) {
   $("#reportrange span").html(
-    start.format("MMMM D YYYY, h:mm:ss a") +
+    start.format("MMMM D YYYY") +
       " - " +
-      end.format("MMMM D YYYY, h:mm:ss a")
+      end.format("MMMM D YYYY")
   );
 }
 
@@ -640,12 +640,12 @@ $(document).ready(function() {
   var id = 0;
   $("#reportrange").on("apply.daterangepicker", function(ev, picker) {
       $(this).val(
-        picker.startDate.format("MMMM D YYYY, h:mm:ss a") +
+        picker.startDate.format("MMMM D YYYY") +
           " to " +
-          picker.endDate.format("MMMM D YYYY, h:mm:ss a")
+          picker.endDate.format("MMMM D YYYY")
       );
-      var start_date = picker.startDate.format("Y-M-D")
-      var end_date =  picker.endDate.format("Y-M-D")
+      var start_date = picker.startDate.format("YYYY-MM-DD")
+      var end_date =  picker.endDate.format("YYYY-MM-DD")
     
       historytable = $("#cash_history_table").DataTable({
           dom: "Blfrtip",
@@ -738,8 +738,8 @@ $(document).ready(function() {
   //CASH History Daatatable starts here
   $(document).on("click", ".view_cash_history", function() {
     id= $(this).attr("id");
-    var start_date = start.format("Y-D-M");
-    var end_date = end.format("Y-D-M")
+    var start_date = start.format("YYYY-MM-DD");
+    var end_date = end.format("YYYY-MM-DD")
     $.ajax({
       url: "{{ route('view_cash_history') }}",
       method: "get",
