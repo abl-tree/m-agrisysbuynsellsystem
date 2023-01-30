@@ -234,8 +234,9 @@ class usersController extends Controller
     }
 
     function viewCashHistory(Request $request){
+        $to = date('Y-m-d', strtotime("+1 day", strtotime($request->date_to)));
         $id = $request->id;
-        $cash_history = Cash_History::with('user')->where('user_id', $id)->whereBetween('created_at',[$request->date_from,$request->date_to])->orderBy('id', 'DESC')->get();
+        $cash_history = Cash_History::with('user')->where('created_at',[$request->date_from,$to])->orderBy('id', 'DESC')->get();
         return \DataTables::of($cash_history)
          ->editColumn('created_at', function ($data) {
 
