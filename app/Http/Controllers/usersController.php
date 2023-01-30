@@ -234,8 +234,8 @@ class usersController extends Controller
     }
 
     function viewCashHistory(Request $request){
-        $to = $request->date_to." 00:00:00";
-        $from = $request->date_from." 00:00:00";
+        $to = $request->date_to;
+        $from = $request->date_from;
         $id = $request->id;
         $cash_history = Cash_History::with('user')->where('user_id', $id)->whereBetween(DB::raw('DATE(created_at)'),[$from,$to])->orderBy('id', 'DESC')->get();
         return \DataTables::of($cash_history)

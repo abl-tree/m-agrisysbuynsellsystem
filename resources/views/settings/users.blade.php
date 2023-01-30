@@ -738,12 +738,16 @@ $(document).ready(function() {
   //CASH History Daatatable starts here
   $(document).on("click", ".view_cash_history", function() {
     id= $(this).attr("id");
+   
     var start_date = start.format("YYYY-MM-DD");
     var end_date = end.format("YYYY-MM-DD")
     $.ajax({
       url: "{{ route('view_cash_history') }}",
-      method: "get",
-      data: { id: id,from_date:start_date,to_date:end_date },
+      type: "get",
+            headers: {
+              "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+            },
+      data: { id: id,date_from:start_date,date_to:end_date },
       dataType: "json",
       success: function(data) {
         if(data.data.length>0){
