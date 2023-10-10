@@ -895,6 +895,7 @@
 @endsection
 
 @section('script')
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
@@ -931,6 +932,26 @@ $('body').on('hidden.bs.modal', function () {
 });
 
 $(document).ready(function() {
+  var pusher = new Pusher("{{$pusher['key']}}", {
+    cluster: "{{$pusher['cluster']}}"
+  });
+
+  var channel = pusher.subscribe('homepage');
+  channel.bind('App\\Events\\DtrUpdated', function(data) {
+    if ("{{ auth()->user()->id }}" != data?.user) {
+      swal({
+        title: "New DTR Created",
+        text: "A new DTR entry has been created. Do you want to refresh this table?",
+        icon: "warning",
+        buttons: true
+      }).then(refresh => {
+        if (refresh) {
+          refresh_dtr_table();
+        }
+      });
+    }
+  });
+
   function cb(start, end) {
     $('.reportrange span').html(
       start.format("MMMM D YYYY, h:mm:ss a") +
@@ -2082,7 +2103,8 @@ $(document).ready(function() {
                       { data: "status", name: "status" },
                       { data: "released_by", name: "released_by" },
                       { data: "action", orderable: false, searchable: false }
-                    ]
+                    ],
+                    order: [[2, "desc"]],
                   });
 
                   dtr.ajax.reload();
@@ -2250,7 +2272,8 @@ $(document).ready(function() {
                     { data: "status", name: "status" },
                     { data: "released_by", name: "released_by" },
                     { data: "action", orderable: false, searchable: false }
-                  ]
+                  ],
+                  order: [[2, "desc"]],
                 });
 
                 dtr.ajax.reload();
@@ -2486,7 +2509,8 @@ $(document).ready(function() {
                     { data: "status", name: "status" },
                     { data: "released_by", name: "released_by" },
                     { data: "action", orderable: false, searchable: false }
-                  ]
+                  ],
+                  order: [[2, "desc"]],
                 });
                 dtr.ajax.reload();
               }
@@ -3221,7 +3245,8 @@ $(document).ready(function() {
             { data: "status", name: "status" },
             { data: "released_by", name: "released_by" },
             { data: "action", orderable: false, searchable: false }
-          ]
+          ],
+          order: [[2, "desc"]],
         });
         $("#dtr_view_modal").modal("show");
       }

@@ -22,6 +22,7 @@ use App\employee_bal;
 use App\UserPermission;
 use App\Events\CashierCashUpdated;
 use App\Events\BalanceUpdated;
+use App\Events\DtrUpdated;
 class dtrController extends Controller
 {
    /**
@@ -44,8 +45,12 @@ class dtrController extends Controller
     }
     public function index(){
         $employee = employee::all();
+        $pusher = [
+            'key' => env('MIX_PUSHER_APP_KEY'),
+            'cluster' => env('MIX_PUSHER_APP_CLUSTER')
+        ];
 
-        return view('main.dtr', compact('employee'));
+        return view('main.dtr', compact('employee'), ['pusher' => $pusher]);
     }
 
     public function store(Request $request){
@@ -87,13 +92,12 @@ class dtrController extends Controller
             $dtr->save();
             $dtr_id = dtr::where('employee_id', '=', $request->employee_id)->latest()->first();
             
-                 $output = array(
-                        'cashOnHand' => 0,
-                 );
-           return  json_encode($output);           
-        
-        
-         
+            $output = array(
+                'cashOnHand' => 0,
+            );
+
+            event(new DtrUpdated());
+            return  json_encode($output);
         }
         if($request->get('button_action') == 'update'){
             $dtr = dtr::find($request->add_id);
@@ -190,16 +194,14 @@ class dtrController extends Controller
                 }
                 $balance->save();  
                 $empbalance->save();   
-                $dtr->save(); 
+                $dtr->save();
+                event(new DtrUpdated());
                 return json_encode($output);       
                  }
             }  
                 $dtr->save();
-                return json_encode($checkpayment);         
-             
-            
-            
-            
+                event(new DtrUpdated());
+                return json_encode($checkpayment);
     }
 }
 
@@ -352,6 +354,7 @@ class dtrController extends Controller
                     'cashHistory' => $dateTime
                 );
                 
+                event(new DtrUpdated());
                 echo json_encode($output);
             }
 
