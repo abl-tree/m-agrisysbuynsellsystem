@@ -53,8 +53,36 @@ class dtrController extends Controller
         return view('main.dtr', compact('employee'), ['pusher' => $pusher]);
     }
 
+    public function checkPendingTransactions($employee_id){
+        $cash_advance = employee_ca::where('employee_id', $employee_id)->where('status', '!=', 'Released')->count();
+        if ($cash_advance) {
+            return response()->json([
+                'message' => "The employee has an unreleased CA. Please finalize it before proceeding."
+            ], 400);
+        }
+
+        $payment = emp_payment::where('logs_id', $employee_id)->whereNull('status')->count();
+        if ($payment) {
+            return response()->json([
+                'message' => "The employee has an unreceived Payment. Please finalize it before proceeding."
+            ], 400);
+        }
+
+        $dtr = dtr::where('employee_id', $employee_id)->where('status', '!=', 'Released')->count();
+        if ($dtr) {
+            return response()->json([
+                'message' => "The employee has an unreleased DTR. Please finalize it before proceeding."
+            ], 400);
+        }
+
+        return true;
+    }
+
     public function store(Request $request){
         if($request->get('button_action') == ''){
+            $check_pending = $this->checkPendingTransactions($request->employee_id);
+            if ($check_pending !== true) return $check_pending;
+
             // balance fetching
             $empbalance = employee_ca::where('employee_id', '=', $request->employee_id)->latest()->first();
             $balance = $empbalance ? $empbalance->balance : 0;
@@ -316,7 +344,7 @@ class dtrController extends Controller
                     $cash_history->trans_no = $dateTime;
                     $cash_history->previous_cash = $user_current;
                     $cash_history->cash_change = $released->p_payment;
-                    $cash_history->total_cash = $user->cashOnHand;
+                    $cash_history->total_cash = $users->cashOnHand;
                     $cash_history->type = "Employee CA Payment (".$employeeName->fname." ".$employeeName->lname.")";
                     $cash_history->save();
                 }
@@ -378,19 +406,25 @@ class dtrController extends Controller
     }
 
     public function add_emp_ca(Request $request){
-            $ca = new employee_ca;
-            $ca->employee_id = $request->employee_id;
-            $ca->reason = $request->reason;
-            $ca->amount = $request->amount;
-            $ca->balance = $request->balance + $request->amount;
-            $ca->status = "On-Hand";
-            $ca->released_by = '';
-            $ca->save();
+        $check_pending = $this->checkPendingTransactions($request->employee_id);
+        if ($check_pending !== true) return $check_pending;
+
+        $ca = new employee_ca;
+        $ca->employee_id = $request->employee_id;
+        $ca->reason = $request->reason;
+        $ca->amount = $request->amount;
+        $ca->balance = $request->balance + $request->amount;
+        $ca->status = "On-Hand";
+        $ca->released_by = '';
+        $ca->save();
 
         return json_encode($ca);
     }
 
     public function emp_payment(Request $request){
+        $check_pending = $this->checkPendingTransactions($request->employee_payment_id);
+        if ($check_pending !== true) return $check_pending;
+
         $paymentlogs = new emp_payment;
         $paymentlogs->logs_id = $request->employee_payment_id;
         $paymentlogs->paymentmethod = $request->paymentmethod;

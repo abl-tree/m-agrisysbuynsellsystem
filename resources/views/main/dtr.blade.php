@@ -1223,7 +1223,10 @@ $(document).ready(function() {
         //   }
       },
       error: function(data) {
-        swal("Oh no!", "Something went wrong, try again.", "error");
+        let error = JSON.parse(data.responseText);
+        let errorMessage = error?.message || "Something went wrong, try again.";
+
+        swal("Oh no!", errorMessage, "error");
         button.disabled = false;
         input.html("SAVE CHANGES");
       }
@@ -1540,8 +1543,11 @@ $(document).ready(function() {
           $("#employee_ca_modal").modal("hide");
         },
         error: function(data) {
+          let error = JSON.parse(data.responseText);
+          let errorMessage = error?.message || "Something went wrong, try again.";
+
           mainMouseDownOne2();
-          swal("Oh no!", "Something went wrong, try again.", "error");
+          swal("Oh no!", errorMessage, "error");
           button.disabled = false;
           input.html("SAVE CHANGES");
         }
