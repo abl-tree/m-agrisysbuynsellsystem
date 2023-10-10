@@ -8160,6 +8160,7 @@ PARA SA PRINT
 
 .swal-text {
   font-size: 20px;
+  text-align: center !important;
 }
 
 .timeline {
