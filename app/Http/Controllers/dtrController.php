@@ -50,6 +50,16 @@ class dtrController extends Controller
 
     public function store(Request $request){
         if($request->get('button_action') == ''){
+            // balance fetching
+            $empbalance = employee_ca::where('employee_id', '=', $request->employee_id)->latest()->first();
+            $balance = $empbalance ? $empbalance->balance : 0;
+
+            if ($balance != $request->emp_balance) {
+                return response()->json([
+                    'message' => 'Balances does not match. Please close this form and try again.'
+                ], 400);
+            }
+
             $dtr = new dtr;
             $dtr->employee_id = $request->employee_id;
             $dtr->role = $request->role;
@@ -87,6 +97,17 @@ class dtrController extends Controller
         }
         if($request->get('button_action') == 'update'){
             $dtr = dtr::find($request->add_id);
+
+            // balance fetching
+            $empbalance = employee_ca::where('employee_id', '=', $dtr->employee_id)->latest()->first();
+            $balance = $empbalance ? $empbalance->balance : 0;
+
+            if ($balance != $request->emp_balance) {
+                return response()->json([
+                    'message' => 'Balances does not match. Please close this form and try again.'
+                ], 400);
+            }
+
             $user = User::find(1);
             $user->cashOnHand -= $dtr->p_payment;
             $user->save();
@@ -963,7 +984,6 @@ class dtrController extends Controller
 
         echo json_encode($cash_advance);
     }
-
 
     public function check_employee(Request $request){
         if($request->id!=null){

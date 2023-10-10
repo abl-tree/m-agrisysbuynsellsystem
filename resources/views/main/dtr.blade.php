@@ -2277,8 +2277,11 @@ $(document).ready(function() {
             refresh_dtr_table();
           },
           error: function(data) {
+            let error = JSON.parse(data.responseText);
+            let errorMessage = error?.message || "Something went wrong, try again.";
+
             mainMouseDownOne();
-            swal("Oh no!", "Something went wrong, try again.", "error");
+            swal("Oh no!", errorMessage, "error");
             button.disabled = false;
             input.html("SAVE CHANGES");
           }
