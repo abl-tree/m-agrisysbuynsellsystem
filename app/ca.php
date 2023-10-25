@@ -17,6 +17,6 @@ class ca extends Model
     public $timestamps = true;
 
     public function customer() {
-        return $this->hasOne('App\customer', 'id', 'customer_id');
+        return $this->hasOne('App\Customer', 'id', 'customer_id');
     }
 }

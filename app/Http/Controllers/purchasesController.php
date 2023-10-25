@@ -56,7 +56,7 @@ class purchasesController extends Controller
         $balance = balance::where('customer_id', '=', $id)
             ->first();
         // dd($balance);
-        $customer = customer::where('id', '=', $id)
+        $customer = Customer::where('id', '=', $id)
             ->first();
         if($balance!=null){
             $output = array(
