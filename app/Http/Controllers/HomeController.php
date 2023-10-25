@@ -8,7 +8,7 @@ use App\User;
 use App\UserPermission;
 use App\paymentlogs;
 use App\customer;
-use App\commodity;
+use App\Commodity;
 use App\trucks;
 use App\purchases;
 use App\sales;
@@ -49,7 +49,7 @@ class HomeController extends Controller
         $user = User::find($id);
 
         $paymentLogs = paymentlogs::orderBy('id', 'desc')->paginate(5);
-        $commodityList = commodity::orderBy('id', 'desc')->get();
+        $commodityList = Commodity::orderBy('id', 'desc')->get();
         $truckList = trucks::orderBy('id', 'desc')->paginate(6);
         $latestPurchases = purchases::orderBy('id', 'desc')->paginate(15);
         $topCommodities = purchases::groupBy('commodity_id')

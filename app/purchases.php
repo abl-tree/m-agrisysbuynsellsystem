@@ -28,6 +28,6 @@ class purchases extends Model
      );
 
     public function commodityName(){
-	    return $this->hasMany('App\commodity','id','commodity_id');
+	    return $this->hasMany('App\Commodity','id','commodity_id');
 	}
 }

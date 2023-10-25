@@ -19,10 +19,10 @@ class price extends Model
     );
 
     public function commodities() {
-        return $this->hasOne('\App\commodity', 'id', 'commodity_id');
+        return $this->hasOne('\App\Commodity', 'id', 'commodity_id');
     }
     public function companies() {
-        return $this->hasOne('\App\company', 'id', 'company_id');
+        return $this->hasOne('\App\Company', 'id', 'company_id');
     }
 
     public function getCommodityAttribute(){
