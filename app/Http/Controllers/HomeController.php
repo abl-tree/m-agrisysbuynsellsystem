@@ -9,7 +9,7 @@ use App\UserPermission;
 use App\paymentlogs;
 use App\Customer;
 use App\Commodity;
-use App\trucks;
+use App\Trucks;
 use App\purchases;
 use App\sales;
 use App\balance;

@@ -10,7 +10,7 @@ use Illuminate\Database\Query\Builder;
 use App\trips;
 use App\User;
 use App\Employee;
-use App\trucks;
+use App\Trucks;
 use App\Commodity;
 use App\Roles;
 use App\trip_expense;

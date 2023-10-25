@@ -10,7 +10,7 @@ use App\Company;
 use App\od_expense;
 use App\od;
 use App\Roles;
-use App\trucks;
+use App\Trucks;
 use Auth;
 use App\User;
 use App\Events\ExpensesUpdated;
