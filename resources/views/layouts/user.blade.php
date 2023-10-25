@@ -8,7 +8,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>M-Agri</title>
+    <title>{{ env('APP_NAME') }}</title>
     <!-- Favicon-->
     <link rel="icon" href="{{ asset('assets/images/logo.ico') }}" type="image/x-icon">
 
@@ -175,7 +175,7 @@
             <div class="navbar-header">
                 <a href="javascript:void(0)" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false"></a>
                 <a href="javascript:void(0)" class="bars" id="l" ></a>
-                <a class="navbar-brand" href="{{ route('home') }}"><span> <img src="{{ asset('assets/images/logo.png') }}" width="50" height="50" class="logo"/></span> <span class="title">M-Agri</span></a>
+                <a class="navbar-brand" href="{{ route('home') }}"><span> <img src="{{ asset('assets/images/logo.png') }}" width="50" height="50" class="logo"/></span> <span class="title">{{ env('APP_NAME') }}</span></a>
             </div>
             <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav navbar-right">

@@ -1559,7 +1559,7 @@ $(document).ready(function() {
     $("#bod").toggleClass("overlay-open");
   });
 
-  document.title = "M-Agri - Daily Time Record";
+  document.title = "{{ env('APP_NAME') }} - Daily Time Record";
 
   $.extend($.fn.dataTable.defaults, {
     language: {
