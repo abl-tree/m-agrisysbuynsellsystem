@@ -151,7 +151,7 @@ $(document).on("click", "#link", function() {
 });
 
 $(document).ready(function() {
-  document.title = "M-Agri - Customers";
+  document.title = "{{ env('APP_NAME') }} - Customers";
 
   $.extend($.fn.dataTable.defaults, {
     language: {

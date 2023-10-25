@@ -354,7 +354,7 @@ var trip_expensetable;
 var od_expensetable;
 var type;
 
-document.title = "M-Agri - Expenses";
+document.title = "{{ env('APP_NAME') }} - Expenses";
 
 $(document).on("click", "#link", function() {
   $("#bod").toggleClass("overlay-open");

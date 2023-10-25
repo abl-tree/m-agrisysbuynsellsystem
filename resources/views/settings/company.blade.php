@@ -79,7 +79,7 @@ $(document).on("click", "#link", function() {
 });
 
 $(document).ready(function() {
-  document.title = "M-Agri - Companies";
+  document.title = "{{ env('APP_NAME') }} - Companies";
 
   $.extend($.fn.dataTable.defaults, {
     language: {

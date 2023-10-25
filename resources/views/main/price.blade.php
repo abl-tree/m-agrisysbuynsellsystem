@@ -300,7 +300,7 @@ var od_expensetable;
 var type;
 var commodity_id=null;
 var company_id=null;
-document.title = "M-Agri - Expenses";
+document.title = "{{ env('APP_NAME') }} - Expenses";
 
 $(document).on("click", "#link", function() {
   $("#bod").toggleClass("overlay-open");

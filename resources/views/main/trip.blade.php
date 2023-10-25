@@ -306,7 +306,7 @@ $(document).ready(function() {
   var trip_date_from;
   var trip_date_to;
 
-  document.title = "M-Agri - Trips";
+  document.title = "{{ env('APP_NAME') }} - Trips";
 
   pickuptable = $("#triptable").DataTable({
     footerCallback: function(row, data, start, end, display) {

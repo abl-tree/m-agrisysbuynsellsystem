@@ -165,7 +165,7 @@ $(document).on("click", "#link", function() {
 });
 
 $(document).ready(function() {
-  document.title = "M-Agri - Employees";
+  document.title = "{{ env('APP_NAME') }} - Employees";
 
   $.extend($.fn.dataTable.defaults, {
     language: {

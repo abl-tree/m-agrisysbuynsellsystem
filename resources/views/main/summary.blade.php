@@ -237,7 +237,7 @@ $(document).on("click", "#link", function() {
 });
 
 $(document).ready(function() {
-  document.title = "M-Agri - Summary Date " + new Date(today).toDateString();
+  document.title = "{{ env('APP_NAME') }} - Summary Date " + new Date(today).toDateString();
   $("#date_today").html(new Date(today).toDateString());
   // console.log(today);
   $.extend($.fn.dataTable.defaults, {
@@ -688,7 +688,7 @@ $(document).ready(function() {
         sales_date_to =
           dt.getFullYear() + "-" + (dt.getMonth() + 1) + "-" + dt.getDate();
         document.title =
-          "M-Agri - Summary Date: From " +
+          "{{ env('APP_NAME') }} - Summary Date: From " +
           new Date(sales_date_from).toDateString() +
           " to " +
           new Date(sales_date_to).toDateString();

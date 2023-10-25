@@ -426,7 +426,7 @@ class pdfController extends Controller
 		</head>
 		<body>
 		<basefont size='4'>
-		<h1 align='center'>M-AGRI</h1>
+		<h1 align='center'>".env('APP_NAME')."</h1>
 		<h2 align='center'>CASH ADVANCE</h2>
 		<p align='center'><b>P-1B Sto. Niño Carmen<br>
 		Davao del Norte</b> <br> ".Carbon::now()->toDayDateTimeString()."</p>

@@ -718,7 +718,7 @@ $(document).ready(function() {
   $("#commodityfilter").select2({
     placeholder: "Select Filter"
   });
-  document.title = "M-Agri - Cash Advance";
+  document.title = "{{ env('APP_NAME') }} - Cash Advance";
 
   $.extend($.fn.dataTable.defaults, {
     language: {

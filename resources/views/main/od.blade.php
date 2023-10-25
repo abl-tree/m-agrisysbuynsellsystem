@@ -260,7 +260,7 @@ $(document).on("click", "#link", function() {
 });
 
 $(document).ready(function() {
-  document.title = "M-Agri - Outbound Deliveries";
+  document.title = "{{ env('APP_NAME') }} - Outbound Deliveries";
 
   $($.fn.dataTable.tables(true)).css("width", "100%");
   $($.fn.dataTable.tables(true))

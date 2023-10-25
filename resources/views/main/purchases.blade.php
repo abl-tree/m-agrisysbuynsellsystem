@@ -1176,7 +1176,7 @@ $(document).ready(function() {
     refresh_purchase_table();
   });
 
-  document.title = "M-Agri - Purchases";
+  document.title = "{{ env('APP_NAME') }} - Purchases";
 
   //Delete Purchases
   $(document).on("click", ".delete_purchase", function() {

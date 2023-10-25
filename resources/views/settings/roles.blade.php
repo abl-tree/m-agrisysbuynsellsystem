@@ -95,7 +95,7 @@ $(document).on("click", "#link", function() {
 });
 
 $(document).ready(function() {
-  document.title = "M-Agri - Roles";
+  document.title = "{{ env('APP_NAME') }} - Roles";
 
   $.extend($.fn.dataTable.defaults, {
     language: {

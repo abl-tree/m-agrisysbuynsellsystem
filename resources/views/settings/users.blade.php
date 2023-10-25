@@ -353,7 +353,7 @@ $(":checkbox").change(function() {
 });
 
 $(document).ready(function() {
-  document.title = "M-Agri - Users";
+  document.title = "{{ env('APP_NAME') }} - Users";
 
   $("#emp_id").select2({
     dropdownParent: $("#user_modal"),
