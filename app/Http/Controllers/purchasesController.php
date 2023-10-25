@@ -10,7 +10,7 @@ use App\Customer;
 use App\ca;
 use App\balance;
 use App\purchases;
-use App\employee;
+use App\Employee;
 use Auth;
 use App\paymentlogs;
 use App\Notification;

@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Query\Builder;
 use App\trips;
 use App\User;
-use App\employee;
+use App\Employee;
 use App\trucks;
 use App\Commodity;
 use App\Roles;

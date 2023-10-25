@@ -18,6 +18,6 @@ class emp_payment extends Model
 	public $timestamps = true;
 
 	public function customerName(){
-	    return $this->hasMany('App\employee','id','logs_id');
+	    return $this->hasMany('App\Employee','id','logs_id');
 	}
 }

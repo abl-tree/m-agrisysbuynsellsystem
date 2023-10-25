@@ -20,6 +20,6 @@ class od extends Model
 	);
 
     public function driver() {
-        return $this->hasOne('App\employee', 'id', 'driver_id');
+        return $this->hasOne('App\Employee', 'id', 'driver_id');
     }
 }

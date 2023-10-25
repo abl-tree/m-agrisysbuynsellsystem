@@ -11,7 +11,7 @@ use App\dtr;
 use App\dtr_expense;
 use App\expense;
 use App\emp_payment;
-use App\employee;
+use App\Employee;
 use App\User;
 use App\Notification;
 use App\Cash_History;
@@ -44,7 +44,7 @@ class dtrController extends Controller
     return Auth::user()->id;
     }
     public function index(){
-        $employee = employee::all();
+        $employee = Employee::all();
         $pusher = [
             'key' => env('MIX_PUSHER_APP_KEY'),
             'cluster' => env('MIX_PUSHER_APP_CLUSTER')
@@ -186,7 +186,7 @@ class dtrController extends Controller
                 else{
                     $dateTime = $getDate->year.$getDate->month.$getDate->day.'1';
                 }
-                $employeeName= employee::where('id', '=', $request->employee_ni)->first();
+                $employeeName= Employee::where('id', '=', $request->employee_ni)->first();
                 $cash_history->trans_no = $dateTime;
                 $cash_history->previous_cash = $user_current;
                 $cash_history->cash_change = $request->p_payment;
@@ -340,7 +340,7 @@ class dtrController extends Controller
                     else{
                         $dateTime = $getDate->year.$getDate->month.$getDate->day.'1';
                     }
-                    $employeeName= employee::where('id', '=', $released->employee_id)->first();
+                    $employeeName= Employee::where('id', '=', $released->employee_id)->first();
                     $cash_history->trans_no = $dateTime;
                     $cash_history->previous_cash = $user_current;
                     $cash_history->cash_change = $released->p_payment;
@@ -481,7 +481,7 @@ class dtrController extends Controller
                 else{
                     $dateTime = $getDate->year.$getDate->month.$getDate->day.'1';
                 }
-                $employeeName= employee::where('id', '=', $paymentDetails->logs_id)->first();
+                $employeeName= Employee::where('id', '=', $paymentDetails->logs_id)->first();
                 $cash_history->trans_no = $dateTime;
                 $cash_history->previous_cash = $user_current;
                 $cash_history->cash_change = $paymentDetails->paymentamount;
@@ -551,7 +551,7 @@ class dtrController extends Controller
         else{
             $dateTime = $getDate->year.$getDate->month.$getDate->day.'1';
         }
-        $employeeName= employee::where('id', '=', $paymentDetails->logs_id)->first();
+        $employeeName= Employee::where('id', '=', $paymentDetails->logs_id)->first();
         $cash_history->trans_no = $dateTime;
         $cash_history->previous_cash = $user_current;
         $cash_history->cash_change = $paymentDetails->paymentamount;

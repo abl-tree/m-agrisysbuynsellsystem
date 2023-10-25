@@ -22,6 +22,6 @@ class trips extends Model
     public $timestamps = true;
 
     public function employee() {
-        return $this->hasOne('App\employee', 'id', 'driver_id');
+        return $this->hasOne('App\Employee', 'id', 'driver_id');
     }
 }

@@ -19,7 +19,7 @@ class dtr extends Model
 
     public function employee()
     {
-        return $this->hasOne('App\employee', 'id', 'employee_id');
+        return $this->hasOne('App\Employee', 'id', 'employee_id');
     }
 
     public function getDeductionsObjectAttribute($value)
