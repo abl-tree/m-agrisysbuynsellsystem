@@ -7,7 +7,7 @@ use Auth;
 use App\User;
 use App\UserPermission;
 use App\paymentlogs;
-use App\customer;
+use App\Customer;
 use App\Commodity;
 use App\trucks;
 use App\purchases;
@@ -67,7 +67,7 @@ class HomeController extends Controller
 
         $cashAdvanceToday = ca::whereDate('created_at', Carbon::today())->with('customer')->get();
 
-        $latestCustomer = customer::latest()->first();
+        $latestCustomer = Customer::latest()->first();
 
         $totalSalesYear = sales::whereYear('created_at', Carbon::today()->year)->get([DB::raw('SUM(amount) AS total_sales')]);
         $totalPurchasesYear = purchases::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(total) AS total_purchases')]);
