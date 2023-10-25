@@ -4,7 +4,7 @@
 
     <div class="login-box ">
         <div class="logo">
-            <a href="javascript:void(0);"><b>{{ config('APP_NAME') }} </b></a>
+            <a href="javascript:void(0);"><b>{{ env('APP_NAME') }} </b></a>
             
         </div>
         <div class="card">
