@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Commodity;
 use App\Customer;
@@ -413,136 +414,324 @@ class purchasesController extends Controller
         return $output; 
     }
 
-    public function release_purchase(Request $request){
-        $check_admin =Auth::user()->access_id;
-        $released = purchases::find($request->id);
-        $user=User::find(Auth::user()->id);
-        $fullname=$user->name;
-        //  dd($released);
-        if($check_admin==1){
-            if($released->status == 'Released'){return false;}
-            $released->status = "Released";
-            $released->released_by = $fullname;
-            $releasedCA = ca::where('pid',$released->id)->first();
-            if($releasedCA){
-                $releasedCA->status = "Released";
-                $releasedCA->released_by = $fullname;
-                $releasedCA->save();
-                $balance = balance::where('customer_id', $releasedCA->customer_id)->increment('balance',$releasedCA->amount);
-            }
-            $released->save();
-           
-
-            event(new PurchasesUpdated($released));
-            event(new BalanceUpdated($released));
-        }else{
-            $user = User::find(Auth::user()->id);
-            if($released->status == 'Released'){return false;}
-            $released->status = "Released";
-            $released->released_by=$fullname;
-            $releasedCA = ca::where('pid',$released->id)->first();
-            if($releasedCA){
-                $releasedCA->status = "Released";
-                $releasedCA->released_by = $fullname;
-                $releasedCA->save();
-                $balance = balance::where('customer_id', $releasedCA->customer_id)->increment('balance',$releasedCA->amount);
-            }
-            $released->save();
-
-            event(new PurchasesUpdated($released));
-            event(new BalanceUpdated($released));
+public function release_purchase(Request $request){
+    $check_admin = Auth::user()->access_id;
+    $released = purchases::find($request->id);
+    $user = User::find(Auth::user()->id);
+    $fullname = $user->name;
+    
+    if($released->status == 'Released'){
+        echo json_encode(['success' => false]);
+        return;
+    }
+    
+    try {
+        DB::beginTransaction();
+        
+        // Update purchase status
+        $released->status = "Released";
+        $released->released_by = $fullname;
+        
+        // Handle related CA
+        $releasedCA = ca::where('pid', $released->id)->first();
+        if($releasedCA){
+            $releasedCA->status = "Released";
+            $releasedCA->released_by = $fullname;
+            $releasedCA->save();
+            balance::where('customer_id', $releasedCA->customer_id)->increment('balance', $releasedCA->amount);
         }
-       
-
-        $userGet = User::where('id', '=', $user->id)->first();
+        
+        $released->save();
+        
+        // Create cash history BEFORE updating user cash
         $cashLatest = Cash_History::orderBy('id', 'DESC')->first();
-        $cash_history = new Cash_History;
-        $cash_history->user_id = $userGet->id;
-
         $getDate = Carbon::now();
         
         if($cashLatest != null){
             $dateTime = $getDate->year.$getDate->month.$getDate->day.($cashLatest->id+1);
-        }
-        else{
+        } else {
             $dateTime = $getDate->year.$getDate->month.$getDate->day.'1';
         }
-
+        
+        $cash_history = new Cash_History;
+        $cash_history->user_id = $user->id;
         $cash_history->trans_no = $dateTime;
         $cash_history->previous_cash = $user->cashOnHand;
         $cash_history->cash_change = $released->amtpay;
         $cash_history->total_cash = $user->cashOnHand - $released->amtpay;
         $cash_history->type = "Release Cash - Purchases";
         $cash_history->save();
-
+        
+        // Update user cash
         $user->cashOnHand -= $released->amtpay;
         $user->save();
-
-           if(intval($released->balance_id) > 0){    
-                $ca = new ca;
-                $ca->pid = $released->id;
-                $ca->customer_id = $released->customer_id;
-                $ca->amount =  $released->balance_id;
-                if($ca->amount > 0 ){
-                    $ca->reason = "FROM PURCHASE (Cash Advance)";
-                }
-                else{
-                    $ca->reason = "FROM PURCHASE (Cash Advance PHP ".$released->balance_id.")";
-                }
-                $ca->balance = 0;
-                $ca->status = "Released";
-                $ca->released_by =$fullname;
-                $ca->save();
-            
-                $balance = balance::where('customer_id', $released->customer_id)->increment('balance', $released->balance_id);
-                if($ca) {
-                    $notification = new Notification;
-                    $notification->notification_type = "Cash Advance";
-                    $notification->message = "Cash Advance";
-                    $notification->status = "Pending";
-                    $notification->admin_id = Auth::id();
-                    $notification->table_source = "cash_advance";
-                    $notification->cash_advance_id = $ca->id;
-                    $notification->save();
         
-                    $datum = Notification::where('id', $notification->id)
-                        ->with('admin', 'cash_advance', 'expense', 'dtr.dtrId.employee', 'trip.tripId.employee')
-                        ->get()[0];
-        
-                    $notification = array();
-        
-                    $notification = array(
-                        'notifications' => $datum,
-                        'customer' => $datum->cash_advance->customer,
-                        'time' => time_elapsed_string($datum->updated_at),
-                    );
-
-                    event(new \App\Events\NewNotification($notification));
-                }
-            }    
-            if( $released->partial > 0){
-                $balance = balance::where('customer_id', $released->customer_id)->decrement('balance',$released->partial);
-                $paymentlogs = new paymentlogs;
-                $paymentlogs->logs_id =$released->customer_id;
-                $paymentlogs->paymentmethod = 'FROM PURCHASE CA';
-                $paymentlogs->checknumber = "Not Specified";
-                $paymentlogs->paymentamount = $released->partial;
-                $paymentlogs->purchase_id = $released->id;
-                $paymentlogs->save();
-               
-       
-                event(new BalanceUpdated($paymentlogs));
+        // Handle balance_id cash advance
+        if(intval($released->balance_id) > 0){    
+            $ca = new ca;
+            $ca->pid = $released->id;
+            $ca->customer_id = $released->customer_id;
+            $ca->amount = $released->balance_id;
+            if($ca->amount > 0){
+                $ca->reason = "FROM PURCHASE (Cash Advance)";
+            } else {
+                $ca->reason = "FROM PURCHASE (Cash Advance PHP ".$released->balance_id.")";
             }
-         
+            $ca->balance = 0;
+            $ca->status = "Released";
+            $ca->released_by = $fullname;
+            $ca->save();
+        
+            balance::where('customer_id', $released->customer_id)->increment('balance', $released->balance_id);
+            
+            $notification = new Notification;
+            $notification->notification_type = "Cash Advance";
+            $notification->message = "Cash Advance";
+            $notification->status = "Pending";
+            $notification->admin_id = Auth::id();
+            $notification->table_source = "cash_advance";
+            $notification->cash_advance_id = $ca->id;
+            $notification->save();
+
+            $datum = Notification::where('id', $notification->id)
+                ->with('admin', 'cash_advance', 'expense', 'dtr.dtrId.employee', 'trip.tripId.employee')
+                ->get()[0];
+
+            $notification = array(
+                'notifications' => $datum,
+                'customer' => $datum->cash_advance->customer,
+                'time' => time_elapsed_string($datum->updated_at),
+            );
+
+            event(new \App\Events\NewNotification($notification));
+        }    
+        
+        // Handle partial payment
+        if($released->partial > 0){
+            balance::where('customer_id', $released->customer_id)->decrement('balance', $released->partial);
+            $paymentlogs = new paymentlogs;
+            $paymentlogs->logs_id = $released->customer_id;
+            $paymentlogs->paymentmethod = 'FROM PURCHASE CA';
+            $paymentlogs->checknumber = "Not Specified";
+            $paymentlogs->paymentamount = $released->partial;
+            $paymentlogs->purchase_id = $released->id;
+            $paymentlogs->save();
+            
+            event(new BalanceUpdated($paymentlogs));
+        }
+        
+        DB::commit();
+        
+        // Fire events after successful commit
+        event(new PurchasesUpdated($released));
+        event(new BalanceUpdated($released));
         event(new CashierCashUpdated());
-       
+        
         $output = array(
             'cashOnHand' => $user->cashOnHand,
             'cashHistory' => $dateTime
         );
         
         echo json_encode($output);
+        
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Release purchase failed: ' . $e->getMessage());
+            echo json_encode(['success' => false]);
+        }
+}
+
+    public function sync_cash_history(){    
+    DB::beginTransaction();
+
+    try {
+        // Sync only last 3 days
+        $cutoffDate = Carbon::now()->subDays(3)->startOfDay();
+        $today = Carbon::now()->endOfDay();
+
+        // Count total missing records
+        $totalMissing = DB::table('purchases as p')
+            ->leftJoin('cash_histories as ch', function($join) {
+                $join->on('p.id', '=', 'ch.purchase_id');
+            })
+            ->where('p.status', 'Released')
+            ->whereBetween('p.created_at', [$cutoffDate, $today])
+            ->whereNull('ch.id')
+            ->count();
+
+        if($totalMissing === 0) {
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'synced' => 0,
+                'message' => 'No missing cash history records found'
+            ]);
+        }
+
+        $chunkSize = 100; // Process 100 at a time
+        $syncedCount = 0;
+
+        for($offset = 0; $offset < $totalMissing; $offset += $chunkSize) {
+            // Get a small chunk of missing records
+            $releasedPurchases = DB::table('purchases as p')
+                ->leftJoin('cash_histories as ch', function($join) {
+                    $join->on('p.id', '=', 'ch.purchase_id');
+                })
+                ->where('p.status', 'Released')
+                ->whereBetween('p.created_at', [$cutoffDate, $today])
+                ->whereNull('ch.id')
+                ->select('p.id', 'p.customer_id', 'p.amtpay', 'p.partial', 'p.balance_id', 'p.released_by', 'p.updated_at')
+                ->offset($offset)
+                ->limit($chunkSize)
+                ->get();
+
+            // Get user data for this chunk
+            $releasedByNames = $releasedPurchases->pluck('released_by')->unique()->filter();
+            $users = User::whereIn('name', $releasedByNames)
+                ->select('id', 'name', 'cashOnHand')
+                ->get()
+                ->keyBy('name');
+
+            // Track running balance for each user to calculate progressive totals
+            $userRunningBalance = [];
+            foreach($users as $name => $user) {
+                $userRunningBalance[$name] = $user->cashOnHand;
+            }
+
+            $cashHistoriesToInsert = [];
+            $caRecordsToInsert = [];
+            $balanceUpdates = [];
+
+            foreach($releasedPurchases as $purchase) {
+                $user = $users->get($purchase->released_by);
+                if(!$user) continue;
+                $purchaseDate = Carbon::parse($purchase->updated_at);
+                $dateTime = Carbon::parse($purchase->updated_at);
+                // Use purchase ID to ensure uniqueness per purchase
+                $trans_no = $dateTime->year . str_pad($dateTime->month, 2, '0', STR_PAD_LEFT) 
+                            . str_pad($dateTime->day, 2, '0', STR_PAD_LEFT) . str_pad($purchase->id, 6, '0', STR_PAD_LEFT);
+
+                // Get the current running balance for this user
+                $previousCash = $userRunningBalance[$purchase->released_by] + $purchase->amtpay;
+                $totalCash = $previousCash - $purchase->amtpay;
+                
+                // Check if identical record already exists
+                $existingRecord = Cash_History::where('user_id', $user->id)
+                    ->where('cash_change', $purchase->amtpay)
+                    ->where('type', 'like', '%Release Cash - Purchases%')
+                    ->whereBetween('created_at', [
+                        $purchaseDate->copy()->subSeconds(15),
+                        $purchaseDate->copy()->addSeconds(15)
+                    ])
+                    ->exists();
+                
+                if($existingRecord) {
+                    continue; // Skip if duplicate exists
+                }
+                
+                // Update running balance for next transaction
+                $userRunningBalance[$purchase->released_by] = $totalCash;
+
+                // Queue cash history record
+                $cashHistoriesToInsert[] = [
+                    'user_id' => $user->id,
+                    'trans_no' => $trans_no,
+                    'previous_cash' => $previousCash,
+                    'cash_change' => $purchase->amtpay,
+                    'total_cash' => $totalCash,
+                    'type' => "Release Cash - Purchases (Synced)",
+                    'purchase_id' => $purchase->id,
+                    'created_at' => $purchase->updated_at,
+                    'updated_at' => now(),
+                ];
+
+                // Handle CA (cash advance) from purchase - only if it doesn't already exist
+                if(intval($purchase->balance_id) > 0) {
+                    $existingCA = ca::where('pid', $purchase->id)->exists();
+                    
+                    if(!$existingCA) {
+                        $caRecordsToInsert[] = [
+                            'pid' => $purchase->id,
+                            'customer_id' => $purchase->customer_id,
+                            'amount' => $purchase->balance_id,
+                            'reason' => "FROM PURCHASE (Cash Advance)",
+                            'balance' => 0,
+                            'status' => "Released",
+                            'released_by' => 'System Sync',
+                            'created_at' => $purchase->updated_at,
+                            'updated_at' => now(),
+                        ];
+
+                        if(!isset($balanceUpdates[$purchase->customer_id])) {
+                            $balanceUpdates[$purchase->customer_id] = 0;
+                        }
+                        $balanceUpdates[$purchase->customer_id] += $purchase->balance_id;
+                    }
+                }
+
+                // Partial payment decreases balance
+                if($purchase->partial > 0) {
+                    if(!isset($balanceUpdates[$purchase->customer_id])) {
+                        $balanceUpdates[$purchase->customer_id] = 0;
+                    }
+                    $balanceUpdates[$purchase->customer_id] -= $purchase->partial;
+                }
+
+                $syncedCount++;
+            }
+
+            // Batch insert cash histories
+            if(!empty($cashHistoriesToInsert)) {
+                Cash_History::insert($cashHistoriesToInsert);
+            }
+
+            // Batch insert CA records if any
+            if(!empty($caRecordsToInsert)) {
+                ca::insert($caRecordsToInsert);
+            }
+
+            // Apply balance updates
+            foreach($balanceUpdates as $customerId => $amount) {
+                if($amount > 0) {
+                    balance::where('customer_id', $customerId)->increment('balance', $amount);
+                } elseif($amount < 0) {
+                    balance::where('customer_id', $customerId)->decrement('balance', abs($amount));
+                }
+            }
+
+            // Clear memory
+            unset($releasedPurchases);
+            unset($users);
+            unset($cashHistoriesToInsert);
+            unset($caRecordsToInsert);
+            unset($balanceUpdates);
+            
+            // Progress log (optional)
+            \Log::info("Sync progress: " . min($offset + $chunkSize, $totalMissing) . " / $totalMissing processed");
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'synced' => $syncedCount,
+            'message' => "$syncedCount missing Cash_History records have been synced successfully"
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        \Log::error('Sync cash history failed: ' . $e->getMessage() . '\n' . $e->getTraceAsString());
+
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
+
+
 
     function updateId(){
         $temp = DB::select('select MAX(id) as "temp" FROM purchases');

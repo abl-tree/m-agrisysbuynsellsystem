@@ -256,41 +256,44 @@
         </div>
     </div>
 
-    <div class="modal fade" id="cash_view_modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="row">            
-                <div class="card">
-                    <div class="header">
-                        <h2>Cash History - <span class="modal_title_cash"></span> as of {{ date('Y-m-d ') }}</h2>
+   <div class="modal fade" id="cash_view_modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="row">            
+            <div class="card">
+                <div class="header">
+                    <h2>Cash History - <span class="modal_title_cash"></span> as of {{ date('Y-m-d ') }}</h2>
+                </div>
+                <div class="body">
+                 <div id="reportrange" class="btn btn-lg" style="">
+                        <span></span> <b class="caret"></b>
+                      </div>
+                    <div class="table-responsive">
+                    <br>
+                        <table id="cash_history_table" class="table table-bordered table-striped table-hover" style="width: 100%;">
+                           <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Previous Amount</th>
+                                    <th>Change in Cash</th>
+                                    <th>Total Cash</th>
+                                    <th>Remarks</th>
+                                    <th>Date/Time</th>
+                                </tr> 
+                           </thead>
+                        </table>
+                   </div>
+                   <div class="modal-footer">
+                           <button type="button" class="btn btn-warning waves-effect" id="sync_cash_history_btn">
+                               <i class="material-icons">sync</i> SYNC HISTORY
+                           </button>
+                           <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
                     </div>
-                    <div class="body">
-                     <div id="reportrange" class="btn btn-lg" style="">
-
-                            <span></span> <b class="caret"></b>
-                          </div>
-                        <div class="table-responsive">
-                        <br>
-                            <table id="cash_history_table" class="table table-bordered table-striped table-hover" style="width: 100%;">
-                               <thead>
-                                    <tr>
-                                        <th>Transaction ID</th>
-                                        <th>Previous Amount</th>
-                                        <th>Change in Cash</th>
-                                        <th>Total Cash</th>
-                                        <th>Remarks</th>
-                                        <th>Date/Time</th>
-                                    </tr> 
-                               </thead>
-                            </table>
-                       </div>
-                       <div class="modal-footer">
-                               <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
-                       </div>
-                    </div>
+                  </div>
                 </div>
             </div> 
         </div>
     </div>
+
     <!-- #END# Exportable Table -->
 @endsection
 
@@ -309,6 +312,42 @@ function cb(start, end) {
       end.format("MMMM D YYYY")
   );
 }
+
+$('#sync_cash_history_btn').on('click', function() {
+    var btn = $(this);
+    var originalText = btn.html();
+    
+    btn.prop('disabled', true);
+    btn.html('<i class="material-icons">hourglass_empty</i> SYNCING...');
+    
+    $.ajax({
+        url: '{{ route("sync_cash") }}',  
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            if(response.success) {
+                swal(
+                  "Purchases Sync!",
+                  response.message,
+                  "success"
+                );
+                 setTimeout(() => location.reload(), 1500);
+            } else {
+                 swal("Oh no!", response.message, "error");
+            }
+        },
+        error: function() {
+            swal("Oh no!", "Something went wrong, try again.", "error");
+        },
+        complete: function() {
+            btn.prop('disabled', false);
+            btn.html(originalText);
+        }
+    });
+});
+
 
 $("#reportrange").daterangepicker(
   {
