@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class dtr_expense extends Model
+class DtrExpense extends Model
 {
     protected $primaryKey = 'id';
     protected $table = 'dtr_expense';

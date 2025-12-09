@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Query\Builder;
 use App\dtr;
-use App\dtr_expense;
-use App\expense;
+use App\DtrExpense;
+use App\Expense;
 use App\emp_payment;
 use App\Employee;
 use App\User;
@@ -234,7 +234,7 @@ class dtrController extends Controller
 }
 
     public function add_dtr_expense(Request $request){
-        $dtr = new dtr_expense;
+        $dtr = new DtrExpense;
         $dtr->dtr_id = $request->id;
         $dtr->description = "description";
         $dtr->type ="DTR EXPENSE";
@@ -268,7 +268,7 @@ class dtrController extends Controller
             event(new \App\Events\NewNotification($notification));
         }
 
-        $details = dtr_expense::all();
+        $details = DtrExpense::all();
 
         echo json_encode($details);
     }

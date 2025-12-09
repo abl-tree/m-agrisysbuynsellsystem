@@ -13,7 +13,7 @@ use App\Employee;
 use App\Trucks;
 use App\Commodity;
 use App\Roles;
-use App\trip_expense;
+use App\TripExpense;
 use App\Notification;
 use App\Cash_History;
 use Carbon\Carbon;
@@ -69,7 +69,7 @@ class tripController extends Controller
         $trip->remarks = $request->remark;
         $trip->save();
         $lastInsertedId = $trip->id;
-        $trip_expenses = new trip_expense;
+        $trip_expenses = new TripExpense;
         $trip_expenses->trip_id = $lastInsertedId;
         $trip_expenses->description = $request->destination;
         $trip_expenses->type ="TRIP EXPENSE";
@@ -111,9 +111,9 @@ class tripController extends Controller
 
     public function update_trip(Request $request){
         $trip= trips::find($request->id);
-        $trip_expenses =trip_expense::find($request->id);
+        $trip_expenses =TripExpense::find($request->id);
         $user = User::find(Auth::user()->id);  
-        $released = trip_expense::find($request->id);  
+        $released = TripExpense::find($request->id);  
         $output="Success";  
         if($trip->expense!=$request->expense && $released->status=="Released"){
             $userGet = User::where('id', '=', Auth::user()->id)->first();
@@ -169,7 +169,7 @@ class tripController extends Controller
         if($check_admin==1){
             $logged_id = Auth::user()->name;
             $user = User::find(Auth::user()->id);
-            $released = trip_expense::find($request->id);
+            $released = TripExpense::find($request->id);
             $released->status = "Released";
             $released->released_by = $logged_id;
             $released->save();
@@ -178,7 +178,7 @@ class tripController extends Controller
             $logged_id = Auth::user()->emp_id;
             $name= Employee::find($logged_id);      
             $user = User::find(Auth::user()->id);       
-            $released=trip_expense::find($request->id);
+            $released=TripExpense::find($request->id);
             $released->status = "Released";
             $released->released_by = $name->fname." ".$name->mname." ".$name->lname;;
             $released->save();
@@ -304,7 +304,7 @@ class tripController extends Controller
 
     function deletedata(Request $request){
         $trips = trips::find($request->input('id'));
-        $trip_expenses =trip_expense::find($request->id);
+        $trip_expenses =TripExpense::find($request->id);
         $user = User::find(1);  
         $output="success";
         if($trip_expenses->status=="Released"){

@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="purchase_modal" tabindex="-1" role="dialog">
+    <div class="modal fade" id="purchase_modal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
          <div class="modal-dialog" role="document">
               <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                    <div class="card">

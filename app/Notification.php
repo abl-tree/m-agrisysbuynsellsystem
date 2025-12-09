@@ -38,23 +38,23 @@ class Notification extends Model
     }
 
     public function cash_advance() {
-        return $this->hasOne('App\ca', 'id', 'cash_advance_id');
+        return $this->hasOne('App\Ca', 'id', 'cash_advance_id');
     }
 
     public function expense() {
-        return $this->hasOne('App\expense', 'id', 'expense_id');
+        return $this->hasOne('App\Expense', 'id', 'expense_id');
     }
 
     public function dtr() {
-        return $this->hasOne('App\dtr_expense', 'id', 'dtr_expense_id');
+        return $this->hasOne('App\DtrExpense', 'id', 'dtr_expense_id');
     }
 
     public function trip() {
-        return $this->hasOne('App\trip_expense', 'id', 'trip_expense_id');
+        return $this->hasOne('App\TripExpense', 'id', 'trip_expense_id');
     }
 
     public function od() {
-        return $this->hasOne('App\od_expense', 'id', 'od_expense_id');
+        return $this->hasOne('App\OdExpense', 'id', 'od_expense_id');
     }
 
     public function admin() {

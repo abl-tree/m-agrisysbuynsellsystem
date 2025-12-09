@@ -4,12 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class od_expense extends Model
+class TripExpense extends Model
 {
     protected $primaryKey = 'id';
-    protected $table = 'od_expense';
+    protected $table = 'trip_expense';
     protected $fillable = array(
-		'od_id',
+		'trip_id',
 		'description',
 		'type',
         'amount',
@@ -17,7 +17,7 @@ class od_expense extends Model
     );
     public $timestamps = true;
 
-    public function odId() {
-        return $this->hasOne('App\od', 'id', 'od_id');
+    public function tripId() {
+        return $this->hasOne('App\trips', 'id', 'trip_id');
     }
 }
