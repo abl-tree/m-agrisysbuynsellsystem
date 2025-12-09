@@ -203,6 +203,7 @@ Route::group(['middleware'=>['auth', 'user:purchases']], function() {
     Route::post('/print_purchase', 'pdfController@purchases')->name('print_purchase');
     Route::post('/release_purchase', 'purchasesController@release_purchase')->name('release_purchase');
     Route::post('/check_balance3', 'purchasesController@check_balance3')->name('check_balance3');
+    Route::post('cash/sync', 'purchasesController@sync_cash_history')->name('sync_cash');
 });
 
 Route::group(['middleware'=>['auth', 'user:dtr']], function() {
