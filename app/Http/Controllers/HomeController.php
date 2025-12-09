@@ -13,7 +13,7 @@ use App\Trucks;
 use App\purchases;
 use App\sales;
 use App\balance;
-use App\expense;
+use App\Expense;
 use App\trip_expense;
 use App\od_expense;
 use App\ca;
@@ -78,7 +78,7 @@ class HomeController extends Controller
         $totalBalanceYear = 0;
         $totalBalanceYear = $balanceYear[0]->amount - ($paymentYear1[0]->amount + $paymentYear2[0]->amount);
         
-        $totalExpenseYear = expense::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
+        $totalExpenseYear = Expense::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
         $totalTripExpenseYear = trip_expense::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_trip_expense')]);
         $totalOdExpenseYear = od_expense::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
         $finalTotalExpenseYear = 0;
@@ -93,7 +93,7 @@ class HomeController extends Controller
         $totalBalanceMonth = 0;
         $totalBalanceMonth = $balanceMonth[0]->amount - ($paymentMonth1[0]->amount + $paymentMonth2[0]->amount);
         
-        $totalExpenseMonth = expense::whereMonth('created_at', Carbon::today()->month)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
+        $totalExpenseMonth = Expense::whereMonth('created_at', Carbon::today()->month)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
         $totalTripExpenseMonth = trip_expense::whereMonth('created_at', Carbon::today()->month)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_trip_expense')]);
         $totalOdExpenseMonth = od_expense::whereMonth('created_at', Carbon::today()->month)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
         $finalTotalExpenseMonth = 0;
@@ -102,7 +102,7 @@ class HomeController extends Controller
         $totalSalesToday = sales::whereDate('created_at', Carbon::today())->get([DB::raw('SUM(amount) AS total_sales')]);
         $totalPurchasesToday = purchases::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(total) AS total_purchases')]);
         $totalBalanceToday = balance::whereDate('created_at', Carbon::today())->get([DB::raw('SUM(balance) AS total_balance')]);
-        $totalExpenseToday = expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
+        $totalExpenseToday = Expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
         $totalTripExpenseToday = trip_expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_trip_expense')]);
         $totalOdExpenseToday = od_expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
 
@@ -176,7 +176,7 @@ class HomeController extends Controller
     }
 
     public function expenses_today(){
-        $totalExpenseToday = expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
+        $totalExpenseToday = Expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
         $totalTripExpenseToday = trip_expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_trip_expense')]);
         $totalOdExpenseToday = od_expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
 
