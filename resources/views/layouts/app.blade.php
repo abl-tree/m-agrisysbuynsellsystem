@@ -19,6 +19,9 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
 
+    <!-- jQuery UI CSS - REQUIRED FOR DATEPICKER -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
     <!-- Styles -->
     @if (App::isLocal())
         <!-- Bootstrap Core Css -->
@@ -69,6 +72,9 @@
         <!-- Scripts -->
          <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
          
+        <!-- jQuery UI JS - REQUIRED FOR DATEPICKER -->
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
         <!-- Bootstrap Core Js -->
         <script src="{{ asset('assets/plugins/bootstrap/js/bootstrap.js') }}"></script>
 
@@ -86,6 +92,9 @@
         <!-- Scripts -->
          <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
          
+        <!-- jQuery UI JS - REQUIRED FOR DATEPICKER -->
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
         <!-- Bootstrap Core Js -->
         <script src="{{ asset('assets/plugins/bootstrap/js/bootstrap.js') }}"></script>
 
@@ -102,6 +111,9 @@
         <!-- Scripts -->
         <script src="{{ secure_asset('assets/plugins/jquery/jquery.min.js') }}"></script>
          
+        <!-- jQuery UI JS - REQUIRED FOR DATEPICKER -->
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
         <!-- Bootstrap Core Js -->
         <script src="{{ secure_asset('assets/plugins/bootstrap/js/bootstrap.js') }}"></script>
 

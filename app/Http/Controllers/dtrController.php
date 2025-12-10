@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Query\Builder;
-use App\dtr;
+use App\Dtr;
 use App\DtrExpense;
 use App\Expense;
 use App\emp_payment;
@@ -15,7 +15,7 @@ use App\Employee;
 use App\User;
 use App\Notification;
 use App\Cash_History;
-use App\employee_ca;
+use App\EmployeeCa;
 use Carbon\Carbon;
 use Auth;
 use App\employee_bal;
@@ -54,7 +54,7 @@ class dtrController extends Controller
     }
 
     public function checkPendingTransactions($employee_id){
-        $cash_advance = employee_ca::where('employee_id', $employee_id)->where('status', '!=', 'Released')->count();
+        $cash_advance = EmployeeCa::where('employee_id', $employee_id)->where('status', '!=', 'Released')->count();
         if ($cash_advance) {
             return response()->json([
                 'message' => "The employee has an unreleased CA. Please finalize it before proceeding."
@@ -68,7 +68,7 @@ class dtrController extends Controller
             ], 400);
         }
 
-        $dtr = dtr::where('employee_id', $employee_id)->where('status', '!=', 'Released')->count();
+        $dtr = Dtr::where('employee_id', $employee_id)->where('status', '!=', 'Released')->count();
         if ($dtr) {
             return response()->json([
                 'message' => "The employee has an unreleased DTR. Please finalize it before proceeding."
@@ -84,7 +84,7 @@ class dtrController extends Controller
             if ($check_pending !== true) return $check_pending;
 
             // balance fetching
-            $empbalance = employee_ca::where('employee_id', '=', $request->employee_id)->latest()->first();
+            $empbalance = EmployeeCa::where('employee_id', '=', $request->employee_id)->latest()->first();
             $balance = $empbalance ? $empbalance->balance : 0;
 
             if ($balance != $request->emp_balance) {
@@ -93,7 +93,7 @@ class dtrController extends Controller
                 ], 400);
             }
 
-            $dtr = new dtr;
+            $dtr = new Dtr();
             $dtr->employee_id = $request->employee_id;
             $dtr->role = $request->role;
             $dtr->overtime = $request->overtime;
@@ -118,7 +118,7 @@ class dtrController extends Controller
             $dtr->deductions = $total_deductions;
             $dtr->status = "On-Hand";
             $dtr->save();
-            $dtr_id = dtr::where('employee_id', '=', $request->employee_id)->latest()->first();
+            $dtr_id = Dtr::where('employee_id', '=', $request->employee_id)->latest()->first();
             
             $output = array(
                 'cashOnHand' => 0,
@@ -128,10 +128,10 @@ class dtrController extends Controller
             return  json_encode($output);
         }
         if($request->get('button_action') == 'update'){
-            $dtr = dtr::find($request->add_id);
+            $dtr = Dtr::find($request->add_id);
 
             // balance fetching
-            $empbalance = employee_ca::where('employee_id', '=', $dtr->employee_id)->latest()->first();
+            $empbalance = EmployeeCa::where('employee_id', '=', $dtr->employee_id)->latest()->first();
             $balance = $empbalance ? $empbalance->balance : 0;
 
             if ($balance != $request->emp_balance) {
@@ -205,7 +205,7 @@ class dtrController extends Controller
                 $new_payment->logs_id = $recent->logs_id;
                 $new_payment->dtr_id = $recent->dtr_id;
                 $new_payment->paymentmethod = "From ADD DTR Form";
-                $balance = employee_ca::where('employee_id', '=', $recent->logs_id)->latest()->first();
+                $balance = EmployeeCa::where('employee_id', '=', $recent->logs_id)->latest()->first();
                 $r_balance = emp_payment::where('logs_id', '=', $recent->logs_id)->latest()->first(); 
                 $empbalance = employee_bal::where('employee_id', '=', $recent->logs_id)->first();
             
@@ -274,7 +274,7 @@ class dtrController extends Controller
     }
      public function release_update_dtr(Request $request){
         $check_admin =Auth::user()->id;
-        $released = dtr::find($request->id);
+        $released = Dtr::find($request->id);
         if($check_admin==1){
             $logged_id = Auth::user()->name;
             $user = User::find(Auth::user()->id);
@@ -292,7 +292,7 @@ class dtrController extends Controller
             $paymentlogs->logs_id = $released->employee_id;
             $paymentlogs->dtr_id = $released->id;
             $paymentlogs->paymentmethod = "From ADD DTR Form";
-            $balance = employee_ca::where('employee_id', '=', $released->employee_id)->latest()->first();
+            $balance = EmployeeCa::where('employee_id', '=', $released->employee_id)->latest()->first();
             $empbalance = employee_bal::where('employee_id', '=', $released->employee_id)->first();
             if($released->p_payment!=0){
                 $paymentlogs->r_balance=$balance->balance-$released->p_payment;
@@ -388,7 +388,7 @@ class dtrController extends Controller
 
     public function check_balance5(Request $request){
         $user = User::find(Auth::user()->id);
-        $expense = dtr::find($request->id);
+        $expense = Dtr::find($request->id);
 
         if($user->cashOnHand < $expense->salary){
             return 0;
@@ -401,7 +401,7 @@ class dtrController extends Controller
         }
     }
     public function check_emp_balance(Request $request){
-        $balance = employee_ca::where('employee_id', '=', $request->id)->latest()->first();
+        $balance = EmployeeCa::where('employee_id', '=', $request->id)->latest()->first();
         return json_encode($balance);
     }
 
@@ -436,7 +436,7 @@ class dtrController extends Controller
         }
         $paymentlogs->remarks = $request->remarks;
         $paymentlogs->paymentamount = $request->amount;
-        $balance = employee_ca::where('employee_id', '=', $request->employee_payment_id)->latest()->first();
+        $balance = EmployeeCa::where('employee_id', '=', $request->employee_payment_id)->latest()->first();
         $paymentlogs->r_balance=$balance->balance;
         $paymentlogs->save();
         if($request->balance <= 0){
@@ -457,7 +457,7 @@ class dtrController extends Controller
             $paymentDetails->delete();
             return "deleted";
         }else{
-            $balance = employee_ca::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
+            $balance = EmployeeCa::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
             $paymentDetails->r_balance=$balance->balance+$paymentDetails->paymentamount;
             $balance->balance = $balance->balance+$paymentDetails->paymentamount;
             $empbalance = employee_bal::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
@@ -510,7 +510,7 @@ class dtrController extends Controller
     public function receive_payment(Request $request){
         $check_admin =Auth::user()->id;
         $paymentDetails = emp_payment::where('id', '=',$request->id)->latest()->first();
-        $balance = employee_ca::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
+        $balance = EmployeeCa::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
         $paymentDetails->r_balance=$balance->balance-$paymentDetails->paymentamount;
         $balance->balance = $balance->balance-$paymentDetails->paymentamount;
         $empbalance = employee_bal::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
@@ -604,7 +604,7 @@ class dtrController extends Controller
     }
 
     function deletedata(Request $request){
-        $dtr = dtr::find($request->input('id'));
+        $dtr = Dtr::find($request->input('id'));
         if($dtr->status == "Released"){
             $user = User::find(Auth::user()->id);
             $userGet = User::where('id', '=', $user->id)->first();
@@ -641,7 +641,7 @@ class dtrController extends Controller
             if($paymentlogs>0){
                 $recent = emp_payment::where('dtr_id', '=', $request->id)->latest()->first();
                 $recent_balance = emp_payment::where('logs_id', '=', $recent->logs_id)->latest()->first();
-                $balance = employee_ca::where('employee_id', '=', $recent->logs_id)->latest()->first();
+                $balance = EmployeeCa::where('employee_id', '=', $recent->logs_id)->latest()->first();
                 $balance->balance = $recent->paymentamount+$balance->balance;
                 $empbalance->balance = $empbalance->balance+$dtr->p_payment;
                 $empbalance->save();
@@ -656,7 +656,7 @@ class dtrController extends Controller
                 $recent = emp_payment::where('dtr_id', '=', $request->id)->latest()->first();
                 $recent_balance = emp_payment::where('logs_id', '=', $recent->logs_id)->latest()->first();
                 $empbalance = employee_bal::where('employee_id', '=', $recent->logs_id)->first();
-                $balance = employee_ca::where('employee_id', '=', $recent->logs_id)->latest()->first();
+                $balance = EmployeeCa::where('employee_id', '=', $recent->logs_id)->latest()->first();
                 $balance->balance = $recent->paymentamount+$balance->balance;
                 $empbalance->balance = $balance->balance;
                 $empbalance->save();  
@@ -671,9 +671,9 @@ class dtrController extends Controller
     
 
     function delete_ca_employee(Request $request){
-        $ca = employee_ca::where('id',$request->id)->first();
+        $ca = EmployeeCa::where('id',$request->id)->first();
         
-            $check_balance= employee_ca::where('employee_id',$ca->employee_id)->latest()->first();
+            $check_balance= EmployeeCa::where('employee_id',$ca->employee_id)->latest()->first();
             if($check_balance->balance<$check_balance->amount){
                 return json_encode("No");
             }else{
@@ -694,7 +694,7 @@ class dtrController extends Controller
             }
             $amount_ca = $ca->amount;
             
-            $recent_ca= employee_ca::where('employee_id',$ca->employee_id)->latest()->first();
+            $recent_ca= EmployeeCa::where('employee_id',$ca->employee_id)->latest()->first();
             $recent_ca->balance = $recent_ca->balance-$amount_ca;
             $empbalance = employee_bal::where('employee_id', '=', $ca->employee_id)->first();
             $empbalance->balance =$recent_ca->balance;
@@ -720,7 +720,7 @@ class dtrController extends Controller
         }
         else{
             $amount_ca = $ca->amount;
-            $recent_ca= employee_ca::where('employee_id',$ca->employee_id)->latest()->first();
+            $recent_ca= EmployeeCa::where('employee_id',$ca->employee_id)->latest()->first();
             $recent_ca->balance = $recent_ca->balance-$amount_ca;
             $empbalance = employee_bal::where('employee_id', '=', $ca->employee_id)->first();
             $empbalance->balance = $recent_ca->balance;
@@ -1031,7 +1031,7 @@ class dtrController extends Controller
             ->where('employee.id', $request->id)
             ->get();
             $balance=0;
-            $empbalance = employee_ca::where('employee_id', '=', $request->id)->latest()->first();
+            $empbalance = EmployeeCa::where('employee_id', '=', $request->id)->latest()->first();
             // $empbalance = employee_bal::where('employee_id', '=', $request->id)->first();
             if($empbalance!=null){
                 $balance= $empbalance->balance;
@@ -1058,7 +1058,7 @@ class dtrController extends Controller
 
     public function check_balance_user(Request $request){
         $user = User::find(Auth::user()->id);
-        $expense = employee_ca::find($request->id);
+        $expense = EmployeeCa::find($request->id);
 
         if($user->cashOnHand < $expense->amount){
             return 0;
@@ -1074,7 +1074,7 @@ class dtrController extends Controller
         if($check_admin==1){
             $logged_id = Auth::user()->name;
             $user = User::find(Auth::user()->id);
-            $released = employee_ca::find($request->id);
+            $released = EmployeeCa::find($request->id);
             $released->status = "Released";
             $released->released_by = $logged_id;
             $released->save();
@@ -1083,7 +1083,7 @@ class dtrController extends Controller
             $logged_id = Auth::user()->emp_id;
             $name= Employee::find($logged_id);
             $user = User::find(Auth::user()->id);
-            $released = employee_ca::find($request->id);
+            $released = EmployeeCa::find($request->id);
             $released->status = "Released";
             $released->released_by = $name->fname." ".$name->mname." ".$name->lname;
             $released->save();

@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="modal fade" id="balancemodal" tabindex="-1" role="dialog">
+<div class="modal fade" id="balancemodal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="card">
@@ -150,7 +150,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ca_modal" tabindex="-1" role="dialog">
+<div class="modal fade" id="ca_modal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="card">
@@ -725,6 +725,7 @@ $(document).ready(function() {
       processing: "Loading.. Please wait"
     }
   });
+
 
   //CASH ADVANCE datatable starts here
   $("#ca_modal").on("hidden.bs.modal", function(e) {
@@ -2981,21 +2982,42 @@ $(document).ready(function() {
     placeholder: "Select a customer"
   });
 
-  $("#month").datepicker({
-    changeMonth: true,
-    changeYear: true,
-    showButtonPanel: true,
-    dateFormat: "MM, yy",
-    beforeShow: function() {
-      $(".ui-datepicker").css("font-size", 18);
-    },
-    onClose: function(dateText, inst) {
-      $(this).datepicker(
-        "setDate",
-        new Date(inst.selectedYear, inst.selectedMonth, 1)
-      );
-    }
-  });
+    if (typeof jQuery.fn.datepicker === 'undefined') {
+            console.warn('jQuery UI Datepicker not loaded');
+            return;
+      }
+
+  try {
+            if ($.fn.datepicker) {
+                $("#month").datepicker({
+                    changeMonth: true,
+                    changeYear: true,
+                    showButtonPanel: true,
+                    dateFormat: "yy-mm-dd",
+                    minDate: new Date(),
+                    onClose: function(dateText, inst) {
+                        var date = new Date(inst.selectedYear, inst.selectedMonth, 1);
+                        $(this).datepicker("setDate", date);
+                    }
+                });
+
+                $("#month1").datepicker({
+                    changeMonth: true,
+                    changeYear: true,
+                    showButtonPanel: true,
+                    dateFormat: "yy-mm-dd",
+                    minDate: new Date(),
+                    onClose: function(dateText, inst) {
+                        var date = new Date(inst.selectedYear, inst.selectedMonth, 1);
+                        $(this).datepicker("setDate", date);
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('Datepicker initialization error:', e);
+            // Fallback to basic HTML5 date input
+            $("#month, #month1").attr("type", "date");
+        }
 
   $("#customer_id1").select2({
     dropdownParent: $("#balancemodal"),

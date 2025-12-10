@@ -541,13 +541,15 @@ public function release_purchase(Request $request){
         }
 }
 
-    public function sync_cash_history(){    
+    public function sync_cash_history(Request $request){ 
+    $from = $request->date_from;
+    $to = $request->date_to;   
+     
     DB::beginTransaction();
 
     try {
-        // Sync only last 3 days
-        $cutoffDate = Carbon::now()->subDays(3)->startOfDay();
-        $today = Carbon::now()->endOfDay();
+       $cutoffDate = Carbon::parse($from)->startOfDay();
+        $today = Carbon::parse($to)->endOfDay();
 
         // Count total missing records
         $totalMissing = DB::table('purchases as p')

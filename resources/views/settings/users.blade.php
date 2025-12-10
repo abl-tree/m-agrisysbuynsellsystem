@@ -304,6 +304,8 @@
 <script>
 var start = moment();
 var end = moment();
+var start_date = null;
+var end_date = null;
 var historytable;
 function cb(start, end) {
   $("#reportrange span").html(
@@ -311,13 +313,17 @@ function cb(start, end) {
       " - " +
       end.format("MMMM D YYYY")
   );
+  start_date = start.format("YYYY-MM-DD");
+  end_date = end.format("YYYY-MM-DD");
 }
+
+
 
 $('#sync_cash_history_btn').on('click', function() {
     var btn = $(this);
     var originalText = btn.html();
+    console.log(start_date, end_date)
     
-    btn.prop('disabled', true);
     btn.html('<i class="material-icons">hourglass_empty</i> SYNCING...');
     
     $.ajax({
@@ -325,6 +331,10 @@ $('#sync_cash_history_btn').on('click', function() {
         type: 'POST',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            date_from: start_date,
+            date_to: end_date
         },
         success: function(response) {
             if(response.success) {
@@ -347,7 +357,6 @@ $('#sync_cash_history_btn').on('click', function() {
         }
     });
 });
-
 
 $("#reportrange").daterangepicker(
   {
