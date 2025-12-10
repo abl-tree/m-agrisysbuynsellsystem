@@ -16,7 +16,7 @@ use App\balance;
 use App\Expense;
 use App\TripExpense;
 use App\OdExpense;
-use App\ca;
+use App\Ca;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -65,14 +65,14 @@ class HomeController extends Controller
             'total' => $topCommoditiesToday->sum('total'),
         ];
 
-        $cashAdvanceToday = ca::whereDate('created_at', Carbon::today())->with('customer')->get();
+        $cashAdvanceToday = Ca::whereDate('created_at', Carbon::today())->with('customer')->get();
 
         $latestCustomer = Customer::latest()->first();
 
         $totalSalesYear = sales::whereYear('created_at', Carbon::today()->year)->get([DB::raw('SUM(amount) AS total_sales')]);
         $totalPurchasesYear = purchases::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(total) AS total_purchases')]);
         
-        $balanceYear = ca::whereYear('created_at', Carbon::today()->year)->get([DB::raw('SUM(amount) AS amount')]);
+        $balanceYear = Ca::whereYear('created_at', Carbon::today()->year)->get([DB::raw('SUM(amount) AS amount')]);
         $paymentYear1 = paymentlogs::whereYear('created_at', Carbon::today()->year)->get([DB::raw('SUM(paymentamount) AS amount')]);
         $paymentYear2 = purchases::whereYear('created_at', Carbon::today()->year)->get([DB::raw('SUM(partial) AS amount')]);
         $totalBalanceYear = 0;
@@ -87,7 +87,7 @@ class HomeController extends Controller
         $totalSalesMonth = sales::whereMonth('created_at', Carbon::today()->month)->get([DB::raw('SUM(amount) AS total_sales')]);
         $totalPurchasesMonth = purchases::whereMonth('created_at', Carbon::today()->month)->where('released_by', '!=' ,'')->get([DB::raw('SUM(net) AS total_kilos'), DB::raw('SUM(total) AS total_purchases')]);
         
-        $balanceMonth = ca::whereMonth('created_at', Carbon::today()->month)->get([DB::raw('SUM(amount) AS amount')]);
+        $balanceMonth = Ca::whereMonth('created_at', Carbon::today()->month)->get([DB::raw('SUM(amount) AS amount')]);
         $paymentMonth1 = paymentlogs::whereMonth('created_at', Carbon::today()->month)->get([DB::raw('SUM(paymentamount) AS amount')]);
         $paymentMonth2 = purchases::whereMonth('created_at', Carbon::today()->month)->get([DB::raw('SUM(partial) AS amount')]);
         $totalBalanceMonth = 0;
@@ -163,7 +163,7 @@ class HomeController extends Controller
     }
 
     public function balance_today(){
-        $balanceToday = ca::whereDate('created_at', Carbon::today())->get([DB::raw('SUM(amount) AS amount')]);
+        $balanceToday = Ca::whereDate('created_at', Carbon::today())->get([DB::raw('SUM(amount) AS amount')]);
         $paymentToday1 = paymentlogs::whereDate('created_at', Carbon::today())->get([DB::raw('SUM(paymentamount) AS amount')]);
         $paymentToday2 = purchases::whereDate('created_at', Carbon::today())->get([DB::raw('SUM(partial) AS amount')]);
         
