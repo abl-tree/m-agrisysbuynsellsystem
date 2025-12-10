@@ -10,7 +10,7 @@ use Illuminate\Database\Query\Builder;
 use App\Dtr;
 use App\DtrExpense;
 use App\Expense;
-use App\emp_payment;
+use App\EmpPayment;
 use App\Employee;
 use App\User;
 use App\Notification;
@@ -18,7 +18,7 @@ use App\Cash_History;
 use App\EmployeeCa;
 use Carbon\Carbon;
 use Auth;
-use App\employee_bal;
+use App\EmployeeBal;
 use App\UserPermission;
 use App\Events\CashierCashUpdated;
 use App\Events\BalanceUpdated;
@@ -61,7 +61,7 @@ class dtrController extends Controller
             ], 400);
         }
 
-        $payment = emp_payment::where('logs_id', $employee_id)->whereNull('status')->count();
+        $payment = EmpPayment::where('logs_id', $employee_id)->whereNull('status')->count();
         if ($payment) {
             return response()->json([
                 'message' => "The employee has an unreceived Payment. Please finalize it before proceeding."
@@ -164,9 +164,9 @@ class dtrController extends Controller
                 $total_deductions += $value;
             }
             $dtr->deductions = $total_deductions;
-            $checkpayment = emp_payment::all();
+            $checkpayment = EmpPayment::all();
             if($checkpayment!==null){                      
-                $paymentlogs = emp_payment::firstOrFail()->where('dtr_id',$request->add_id)->count();
+                $paymentlogs = EmpPayment::firstOrFail()->where('dtr_id',$request->add_id)->count();
             if($paymentlogs>0){
                 $user1 = User::find(1);
                 $user_current =  $user1->cashOnHand;
@@ -200,14 +200,14 @@ class dtrController extends Controller
                     'user'       => Auth::user()->id,
                 );
                 
-                $recent = emp_payment::where('dtr_id', '=', $request->add_id)->latest()->first();
-                $new_payment = new emp_payment;
+                $recent = EmpPayment::where('dtr_id', '=', $request->add_id)->latest()->first();
+                $new_payment = new EmpPayment();
                 $new_payment->logs_id = $recent->logs_id;
                 $new_payment->dtr_id = $recent->dtr_id;
                 $new_payment->paymentmethod = "From ADD DTR Form";
                 $balance = EmployeeCa::where('employee_id', '=', $recent->logs_id)->latest()->first();
-                $r_balance = emp_payment::where('logs_id', '=', $recent->logs_id)->latest()->first(); 
-                $empbalance = employee_bal::where('employee_id', '=', $recent->logs_id)->first();
+                $r_balance = EmpPayment::where('logs_id', '=', $recent->logs_id)->latest()->first(); 
+                $empbalance = EmployeeBal::where('employee_id', '=', $recent->logs_id)->first();
             
             
                 $r_balance->r_balance = $request->last_payment+$empbalance->balance; 
@@ -288,12 +288,12 @@ class dtrController extends Controller
             $released->released_by = $name->fname." ".$name->mname." ".$name->lname;   
         }
                 
-            $paymentlogs = new emp_payment;
+            $paymentlogs = new EmpPayment();
             $paymentlogs->logs_id = $released->employee_id;
             $paymentlogs->dtr_id = $released->id;
             $paymentlogs->paymentmethod = "From ADD DTR Form";
             $balance = EmployeeCa::where('employee_id', '=', $released->employee_id)->latest()->first();
-            $empbalance = employee_bal::where('employee_id', '=', $released->employee_id)->first();
+            $empbalance = EmployeeBal::where('employee_id', '=', $released->employee_id)->first();
             if($released->p_payment!=0){
                 $paymentlogs->r_balance=$balance->balance-$released->p_payment;
                 $paymentlogs->remarks = "Partial Payment";
@@ -409,7 +409,7 @@ class dtrController extends Controller
         $check_pending = $this->checkPendingTransactions($request->employee_id);
         if ($check_pending !== true) return $check_pending;
 
-        $ca = new employee_ca;
+        $ca = new EmployeeCa();
         $ca->employee_id = $request->employee_id;
         $ca->reason = $request->reason;
         $ca->amount = $request->amount;
@@ -425,7 +425,7 @@ class dtrController extends Controller
         $check_pending = $this->checkPendingTransactions($request->employee_payment_id);
         if ($check_pending !== true) return $check_pending;
 
-        $paymentlogs = new emp_payment;
+        $paymentlogs = new EmpPayment();
         $paymentlogs->logs_id = $request->employee_payment_id;
         $paymentlogs->paymentmethod = $request->paymentmethod;
         if( $request->checknumber!=""){
@@ -452,7 +452,7 @@ class dtrController extends Controller
     }
     public function delete_payment(Request $request){
         $check_admin =Auth::user()->id;
-        $paymentDetails = emp_payment::where('id', '=',$request->id)->latest()->first();
+        $paymentDetails = EmpPayment::where('id', '=',$request->id)->latest()->first();
         if($paymentDetails->status==null){
             $paymentDetails->delete();
             return "deleted";
@@ -460,7 +460,7 @@ class dtrController extends Controller
             $balance = EmployeeCa::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
             $paymentDetails->r_balance=$balance->balance+$paymentDetails->paymentamount;
             $balance->balance = $balance->balance+$paymentDetails->paymentamount;
-            $empbalance = employee_bal::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
+            $empbalance = EmployeeBal::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
             $empbalance->balance = $paymentDetails->r_balance;
             
                 $user = User::find(Auth::user()->id);
@@ -509,11 +509,11 @@ class dtrController extends Controller
     }
     public function receive_payment(Request $request){
         $check_admin =Auth::user()->id;
-        $paymentDetails = emp_payment::where('id', '=',$request->id)->latest()->first();
+        $paymentDetails = EmpPayment::where('id', '=',$request->id)->latest()->first();
         $balance = EmployeeCa::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
         $paymentDetails->r_balance=$balance->balance-$paymentDetails->paymentamount;
         $balance->balance = $balance->balance-$paymentDetails->paymentamount;
-        $empbalance = employee_bal::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
+        $empbalance = EmployeeBal::where('employee_id', '=', $paymentDetails->logs_id)->latest()->first();
         $empbalance->balance = $paymentDetails->r_balance;
         if($check_admin==1){
             $logged_id = Auth::user()->name;
@@ -635,12 +635,12 @@ class dtrController extends Controller
                 'cashHistory' => $dateTime
             );
             $dtr->delete();
-            $empbalance = employee_bal::where('employee_id', '=', $dtr->employee_id)->first();
-            $paymentlogs = emp_payment::where('dtr_id',$request->id)->count();
-            $delete_dtr = emp_payment::where('dtr_id',$request->id);
+            $empbalance = EmployeeBal::where('employee_id', '=', $dtr->employee_id)->first();
+            $paymentlogs = EmpPayment::where('dtr_id',$request->id)->count();
+            $delete_dtr = EmpPayment::where('dtr_id',$request->id);
             if($paymentlogs>0){
-                $recent = emp_payment::where('dtr_id', '=', $request->id)->latest()->first();
-                $recent_balance = emp_payment::where('logs_id', '=', $recent->logs_id)->latest()->first();
+                $recent = EmpPayment::where('dtr_id', '=', $request->id)->latest()->first();
+                $recent_balance = EmpPayment::where('logs_id', '=', $recent->logs_id)->latest()->first();
                 $balance = EmployeeCa::where('employee_id', '=', $recent->logs_id)->latest()->first();
                 $balance->balance = $recent->paymentamount+$balance->balance;
                 $empbalance->balance = $empbalance->balance+$dtr->p_payment;
@@ -650,12 +650,12 @@ class dtrController extends Controller
             $delete_dtr->delete();   
             echo json_encode($output);
         }else{
-            $paymentlogs = emp_payment::where('dtr_id',$request->id)->count();
-            $delete_dtr = emp_payment::where('dtr_id',$request->id);
+            $paymentlogs = EmpPayment::where('dtr_id',$request->id)->count();
+            $delete_dtr = EmpPayment::where('dtr_id',$request->id);
             if($paymentlogs>0){
-                $recent = emp_payment::where('dtr_id', '=', $request->id)->latest()->first();
-                $recent_balance = emp_payment::where('logs_id', '=', $recent->logs_id)->latest()->first();
-                $empbalance = employee_bal::where('employee_id', '=', $recent->logs_id)->first();
+                $recent = EmpPayment::where('dtr_id', '=', $request->id)->latest()->first();
+                $recent_balance = EmpPayment::where('logs_id', '=', $recent->logs_id)->latest()->first();
+                $empbalance = EmployeeBal::where('employee_id', '=', $recent->logs_id)->first();
                 $balance = EmployeeCa::where('employee_id', '=', $recent->logs_id)->latest()->first();
                 $balance->balance = $recent->paymentamount+$balance->balance;
                 $empbalance->balance = $balance->balance;
@@ -696,7 +696,7 @@ class dtrController extends Controller
             
             $recent_ca= EmployeeCa::where('employee_id',$ca->employee_id)->latest()->first();
             $recent_ca->balance = $recent_ca->balance-$amount_ca;
-            $empbalance = employee_bal::where('employee_id', '=', $ca->employee_id)->first();
+            $empbalance = EmployeeBal::where('employee_id', '=', $ca->employee_id)->first();
             $empbalance->balance =$recent_ca->balance;
             $empbalance->save();  
             $recent_ca->save();
@@ -722,7 +722,7 @@ class dtrController extends Controller
             $amount_ca = $ca->amount;
             $recent_ca= EmployeeCa::where('employee_id',$ca->employee_id)->latest()->first();
             $recent_ca->balance = $recent_ca->balance-$amount_ca;
-            $empbalance = employee_bal::where('employee_id', '=', $ca->employee_id)->first();
+            $empbalance = EmployeeBal::where('employee_id', '=', $ca->employee_id)->first();
             $empbalance->balance = $recent_ca->balance;
             $empbalance->save();  
             $recent_ca->save();
@@ -1032,7 +1032,7 @@ class dtrController extends Controller
             ->get();
             $balance=0;
             $empbalance = EmployeeCa::where('employee_id', '=', $request->id)->latest()->first();
-            // $empbalance = employee_bal::where('employee_id', '=', $request->id)->first();
+            // $empbalance = EmployeeBal::where('employee_id', '=', $request->id)->first();
             if($empbalance!=null){
                 $balance= $empbalance->balance;
             }
@@ -1089,14 +1089,14 @@ class dtrController extends Controller
             $released->save();
             event(new BalanceUpdated($released));
         }
-            $check_ca= employee_bal::where('employee_id', '=', $released->employee_id)->first();
+            $check_ca= EmployeeBal::where('employee_id', '=', $released->employee_id)->first();
 
             if($check_ca!=null){
-                $balance = employee_bal::where('employee_id', '=', $released->employee_id)->first();
+                $balance = EmployeeBal::where('employee_id', '=', $released->employee_id)->first();
                 $balance->balance = $balance->balance + $released->amount;
                 $balance->save();     
             }else{
-                $balance = new employee_bal;
+                $balance = new EmployeeBal();
                 $balance->employee_id=$released->employee_id;
                 $balance->logs_id=$released->employee_id;
                 $balance->balance = $released->amount;
