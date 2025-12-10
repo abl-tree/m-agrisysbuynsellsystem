@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Query\Builder;
-use App\ca;
+use App\Ca;
 use App\Customer;
 use App\balance;
 use App\Notification;
@@ -84,7 +84,7 @@ class caController extends Controller
             $balance->logs_ID = $cid;
             $balance->save();
 
-            $ca = new ca;
+            $ca = new Ca();
             $ca->customer_id = $cid;
             $ca->reason = $request->reason1;
             $ca->amount = $request->bal;
@@ -121,7 +121,7 @@ class caController extends Controller
         }
 
         else{ 
-            $ca = new ca;
+            $ca = new Ca();
             $ca->customer_id = $request->customer_id;
             $ca->reason = $request->reason;
             $ca->amount = $request->amount;
@@ -158,7 +158,7 @@ class caController extends Controller
             }
     }
         if($request->get('button_action_ca') == 'update'){
-            $ca = ca::find($request->get('id_ca'));
+            $ca = Ca::find($request->get('id_ca'));
             $cash_advance = DB::table('cash_advance')
             ->join('customer', 'customer.id', '=', 'cash_advance.customer_id')
             ->select('cash_advance.id','cash_advance.customer_id', 'customer.fname', 'customer.mname', 'customer.lname', 'cash_advance.reason', 'cash_advance.amount', 'cash_advance.created_at','cash_advance.balance','cash_advance.status','cash_advance.released_by')
@@ -215,7 +215,7 @@ class caController extends Controller
         if($check_admin==1){
             $logged_id = Auth::user()->name;
             $user = User::find(Auth::user()->id);
-            $released = ca::find($request->id);
+            $released = Ca::find($request->id);
             $released->status = "Released";
             $released->released_by = $logged_id;
             $released->save();
@@ -225,7 +225,7 @@ class caController extends Controller
             $logged_id = Auth::user()->emp_id;
             $name= Employee::find($logged_id);
             $user = User::find(Auth::user()->id);
-            $released = ca::find($request->id);
+            $released = Ca::find($request->id);
             $released->status = "Released";
             $released->released_by = $name->fname." ".$name->mname." ".$name->lname;
             $released->save();
@@ -270,7 +270,7 @@ class caController extends Controller
 
     public function check_balance4(Request $request){
         $user = User::find(Auth::user()->id);
-        $expense = ca::find($request->id);
+        $expense = Ca::find($request->id);
 
         if($user->cashOnHand < $expense->amount){
             return 0;
@@ -300,7 +300,7 @@ class caController extends Controller
     }
 
     function deletedata(Request $request){
-        $ca = ca::find($request->input('id'));
+        $ca = Ca::find($request->input('id'));
         $customer= $ca->customer_id; 
         $amount= $ca->amount;
         $balance = balance::where('customer_id', $customer)->first();
@@ -446,7 +446,7 @@ class caController extends Controller
     }
 
     public function check_balance(Request $request){
-        //$balance = ca::where('customer_id', $request->id)->orderBy('customer_id', 'desc')->latest()->get();
+        //$balance = Ca::where('customer_id', $request->id)->orderBy('customer_id', 'desc')->latest()->get();
         $balance = balance::where('customer_id', '=', $request->id)
             ->get();
         echo json_encode($balance);

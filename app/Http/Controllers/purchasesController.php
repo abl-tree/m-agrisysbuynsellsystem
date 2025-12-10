@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Commodity;
 use App\Customer;
-use App\ca;
+use App\Ca;
 use App\balance;
 use App\purchases;
 use App\Employee;
@@ -47,7 +47,7 @@ class purchasesController extends Controller
 
         $commodity = Commodity::all();
         $customer = Customer::all();
-        $ca = ca::all();
+        $ca = Ca::all();
 
         return view('main.purchases')->with(compact('commodity','customer','ca'));
     }
@@ -163,7 +163,7 @@ class purchasesController extends Controller
         if($request->get('button_action1') == 'update'){
             $check_admin =Auth::user()->access_id;
             $purchases=  Purchases::find($request->get('id'));
-            $ca =  ca::where('pid',$request->get('id'))->first();
+            $ca =  Ca::where('pid',$request->get('id'))->first();
             if($ca->status == 'Released'){
                 $balance1 = balance::where('customer_id', $ca->customer_id)->first();   
                 $balance1->balance =  $request->balance;
@@ -173,7 +173,7 @@ class purchasesController extends Controller
                 
                 $userGet = User::where('id', '=', $user->id)->first();
                 $cashLatest = Cash_History::orderBy('id', 'DESC')->first();
-                $cash_history = new Cash_History;
+                $cash_history = new Cash_History();
                 $cash_history->user_id = $userGet->id;
 
                 $getDate = Carbon::now();
@@ -347,7 +347,7 @@ class purchasesController extends Controller
             $purchases->save();
             
             if($request->bal > 0){
-                $ca = new ca;
+                $ca = new Ca();
                 $ca->pid = $purchases->id;
                 $ca->customer_id = $request->customerid;
                 if ($request->bal != ""){
@@ -433,7 +433,7 @@ public function release_purchase(Request $request){
         $released->released_by = $fullname;
         
         // Handle related CA
-        $releasedCA = ca::where('pid', $released->id)->first();
+        $releasedCA = Ca::where('pid', $released->id)->first();
         if($releasedCA){
             $releasedCA->status = "Released";
             $releasedCA->released_by = $fullname;
@@ -468,7 +468,7 @@ public function release_purchase(Request $request){
         
         // Handle balance_id cash advance
         if(intval($released->balance_id) > 0){    
-            $ca = new ca;
+            $ca = new Ca();
             $ca->pid = $released->id;
             $ca->customer_id = $released->customer_id;
             $ca->amount = $released->balance_id;
@@ -649,7 +649,7 @@ public function release_purchase(Request $request){
 
                 // Handle CA (cash advance) from purchase - only if it doesn't already exist
                 if(intval($purchase->balance_id) > 0) {
-                    $existingCA = ca::where('pid', $purchase->id)->exists();
+                    $existingCA = Ca::where('pid', $purchase->id)->exists();
                     
                     if(!$existingCA) {
                         $caRecordsToInsert[] = [
@@ -689,7 +689,7 @@ public function release_purchase(Request $request){
 
             // Batch insert CA records if any
             if(!empty($caRecordsToInsert)) {
-                ca::insert($caRecordsToInsert);
+                Ca::insert($caRecordsToInsert);
             }
 
             // Apply balance updates
@@ -909,7 +909,7 @@ public function release_purchase(Request $request){
 
     function deletedata(Request $request){
         $purchases = Purchases::find($request->input('id'));
-        $ca =  ca::where('pid',$request->get('id'))->first();
+        $ca =  Ca::where('pid',$request->get('id'))->first();
         // return [
         //     "code"       => 500,
         //     "title"      => "Delete Error",
@@ -963,7 +963,7 @@ public function release_purchase(Request $request){
             $cash_history = new Cash_History;
             $cash_history->user_id = $userGet->id;
             $payment_history=paymentlogs::where('purchase_id', '=', $purchases->id)->first();
-            $cash_advance=ca::where('pid', '=', $purchases->id)->first();
+            $cash_advance=Ca::where('pid', '=', $purchases->id)->first();
             $check_balance=balance::where('customer_id', $purchases->customer_id)->first();
             if($userGet->access_id!==1){
                 return [

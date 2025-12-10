@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ca extends Model
+class Ca extends Model
 {
     protected $primaryKey = 'id';
     protected $table = 'cash_advance';
