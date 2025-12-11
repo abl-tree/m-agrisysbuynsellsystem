@@ -54,7 +54,7 @@ class Notification extends Model
     }
 
     public function od() {
-        return $this->hasOne('App\OdExpense', 'id', 'od_expense_id');
+        return $this->hasOne('App\od_expense', 'id', 'od_expense_id');
     }
 
     public function admin() {

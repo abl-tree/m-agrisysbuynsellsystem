@@ -15,7 +15,7 @@ use App\sales;
 use App\balance;
 use App\Expense;
 use App\TripExpense;
-use App\OdExpense;
+use App\od_expense;
 use App\Ca;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +80,7 @@ class HomeController extends Controller
         
         $totalExpenseYear = Expense::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
         $totalTripExpenseYear = TripExpense::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_trip_expense')]);
-        $totalOdExpenseYear = OdExpense::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
+        $totalOdExpenseYear = od_expense::whereYear('created_at', Carbon::today()->year)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
         $finalTotalExpenseYear = 0;
         $finalTotalExpenseYear = $totalExpenseYear[0]->total_expense + $totalTripExpenseYear[0]->total_trip_expense + $totalOdExpenseYear[0]->total_od_expense;
 
@@ -95,7 +95,7 @@ class HomeController extends Controller
         
         $totalExpenseMonth = Expense::whereMonth('created_at', Carbon::today()->month)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
         $totalTripExpenseMonth = TripExpense::whereMonth('created_at', Carbon::today()->month)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_trip_expense')]);
-        $totalOdExpenseMonth = OdExpense::whereMonth('created_at', Carbon::today()->month)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
+        $totalOdExpenseMonth = od_expense::whereMonth('created_at', Carbon::today()->month)->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
         $finalTotalExpenseMonth = 0;
         $finalTotalExpenseMonth = $totalExpenseMonth[0]->total_expense + $totalTripExpenseMonth[0]->total_trip_expense + $totalOdExpenseMonth[0]->total_od_expense;
 
@@ -104,7 +104,7 @@ class HomeController extends Controller
         $totalBalanceToday = balance::whereDate('created_at', Carbon::today())->get([DB::raw('SUM(balance) AS total_balance')]);
         $totalExpenseToday = Expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
         $totalTripExpenseToday = TripExpense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_trip_expense')]);
-        $totalOdExpenseToday = OdExpense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
+        $totalOdExpenseToday = od_expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
 
         $finalTotalExpenseToday = $totalExpenseToday[0]->total_expense + $totalTripExpenseToday[0]->total_trip_expense + $totalOdExpenseToday[0]->total_od_expense;
 
@@ -178,7 +178,7 @@ class HomeController extends Controller
     public function expenses_today(){
         $totalExpenseToday = Expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_expense')]);
         $totalTripExpenseToday = TripExpense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_trip_expense')]);
-        $totalOdExpenseToday = OdExpense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
+        $totalOdExpenseToday = od_expense::whereDate('created_at', Carbon::today())->where('released_by', '!=' ,'')->get([DB::raw('SUM(amount) AS total_od_expense')]);
 
         $finalTotalExpenseToday = 0;
         $finalTotalExpenseToday = $totalExpenseToday[0]->total_expense + $totalTripExpenseToday[0]->total_trip_expense + $totalOdExpenseToday[0]->total_od_expense;

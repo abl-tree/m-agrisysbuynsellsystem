@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OdExpense extends Model
+class od_expense extends Model
 {
     protected $primaryKey = 'id';
     protected $table = 'od_expense';
