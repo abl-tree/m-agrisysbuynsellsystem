@@ -335,7 +335,7 @@ class odController extends Controller
 
     function deletedata(Request $request){
         $od = od::find($request->input('id'));
-        $od_expenses =od_expense::find($request->id);
+        $od_expenses = od_expense::where('od_id', $request->id)->first();
         $user = User::find(1);  
         $output="success";
         if($od_expenses->status=="Released"){
